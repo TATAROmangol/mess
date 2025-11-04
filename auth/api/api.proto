@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package auth;
+
+
+import "googleapis/google/api/annotations.proto";
+
+service LoginService {
+  rpc Login(LoginRequest) returns (GetUserResponse) {
+    option (google.api.http) = {
+      get: "/v1/users/{id}"
+    };
+  }
+}
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (User);
+}
+
+
+message User {
+  int64 id = 1;
+  string name = 2;
+  string email = 3;
+}
+
+message GetUserRequest {
+  int64 id = 1;
+}
