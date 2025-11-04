@@ -4,7 +4,7 @@
 // 	protoc        v6.32.1
 // source: auth.proto
 
-package auth
+package authpb
 
 import (
 	_ "google.golang.org/genproto/googleapis/api/annotations"
@@ -571,7 +571,7 @@ var File_auth_proto protoreflect.FileDescriptor
 const file_auth_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"auth.proto\x12\x04auth\x1a\x1cgoogle/api/annotations.proto\"F\n" +
+	"auth.proto\x12\x06authpb\x1a\x1cgoogle/api/annotations.proto\"F\n" +
 	"\fLoginRequest\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\"%\n" +
@@ -600,17 +600,18 @@ const file_auth_proto_rawDesc = "" +
 	"\x05token\x18\x01 \x01(\tR\x05token\"5\n" +
 	"\x14GetSubjectIDResponse\x12\x1d\n" +
 	"\n" +
-	"subject_id\x18\x01 \x01(\tR\tsubjectId2\xde\x01\n" +
-	"\fLoginService\x12@\n" +
-	"\x05Login\x12\x12.auth.LoginRequest\x1a\x13.auth.LoginResponse\"\x0e\x82\xd3\xe4\x93\x02\b\x12\x06/login\x12D\n" +
-	"\x06Logout\x12\x13.auth.LogoutRequest\x1a\x14.auth.LogoutResponse\"\x0f\x82\xd3\xe4\x93\x02\t\x12\a/logout\x12F\n" +
-	"\aRefresh\x12\x14.auth.RefreshRequest\x1a\x13.auth.LoginResponse\"\x10\x82\xd3\xe4\x93\x02\n" +
-	"\x12\b/refresh2\xdf\x01\n" +
-	"\vUserService\x12?\n" +
+	"subject_id\x18\x01 \x01(\tR\tsubjectId2\xee\x01\n" +
+	"\x10AuthorizeService\x12D\n" +
+	"\x05Login\x12\x14.authpb.LoginRequest\x1a\x15.authpb.LoginResponse\"\x0e\x82\xd3\xe4\x93\x02\b\x12\x06/login\x12H\n" +
+	"\x06Logout\x12\x15.authpb.LogoutRequest\x1a\x16.authpb.LogoutResponse\"\x0f\x82\xd3\xe4\x93\x02\t\x12\a/logout\x12J\n" +
+	"\aRefresh\x12\x16.authpb.RefreshRequest\x1a\x15.authpb.LoginResponse\"\x10\x82\xd3\xe4\x93\x02\n" +
+	"\x12\b/refresh2\xee\x01\n" +
+	"\x0eSubjectService\x12C\n" +
 	"\n" +
-	"AddSubject\x12\x17.auth.AddSubjectRequest\x1a\x18.auth.AddSubjectResponse\x12H\n" +
-	"\rDeleteSubject\x12\x1a.auth.DeleteSubjectRequest\x1a\x1b.auth.DeleteSubjectResponse\x12E\n" +
-	"\fGetSubjectID\x12\x19.auth.GetSubjectIDRequest\x1a\x1a.auth.GetSubjectIDResponseB\bZ\x06./authb\x06proto3"
+	"AddSubject\x12\x19.authpb.AddSubjectRequest\x1a\x1a.authpb.AddSubjectResponse\x12L\n" +
+	"\rDeleteSubject\x12\x1c.authpb.DeleteSubjectRequest\x1a\x1d.authpb.DeleteSubjectResponse\x12I\n" +
+	"\fGetSubjectID\x12\x1b.authpb.GetSubjectIDRequest\x1a\x1c.authpb.GetSubjectIDResponseB\n" +
+	"Z\b./authpbb\x06proto3"
 
 var (
 	file_auth_proto_rawDescOnce sync.Once
@@ -626,32 +627,32 @@ func file_auth_proto_rawDescGZIP() []byte {
 
 var file_auth_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_auth_proto_goTypes = []any{
-	(*LoginRequest)(nil),          // 0: auth.LoginRequest
-	(*LoginResponse)(nil),         // 1: auth.LoginResponse
-	(*LogoutRequest)(nil),         // 2: auth.LogoutRequest
-	(*LogoutResponse)(nil),        // 3: auth.LogoutResponse
-	(*RefreshRequest)(nil),        // 4: auth.RefreshRequest
-	(*RefreshResponse)(nil),       // 5: auth.RefreshResponse
-	(*AddSubjectRequest)(nil),     // 6: auth.AddSubjectRequest
-	(*AddSubjectResponse)(nil),    // 7: auth.AddSubjectResponse
-	(*DeleteSubjectRequest)(nil),  // 8: auth.DeleteSubjectRequest
-	(*DeleteSubjectResponse)(nil), // 9: auth.DeleteSubjectResponse
-	(*GetSubjectIDRequest)(nil),   // 10: auth.GetSubjectIDRequest
-	(*GetSubjectIDResponse)(nil),  // 11: auth.GetSubjectIDResponse
+	(*LoginRequest)(nil),          // 0: authpb.LoginRequest
+	(*LoginResponse)(nil),         // 1: authpb.LoginResponse
+	(*LogoutRequest)(nil),         // 2: authpb.LogoutRequest
+	(*LogoutResponse)(nil),        // 3: authpb.LogoutResponse
+	(*RefreshRequest)(nil),        // 4: authpb.RefreshRequest
+	(*RefreshResponse)(nil),       // 5: authpb.RefreshResponse
+	(*AddSubjectRequest)(nil),     // 6: authpb.AddSubjectRequest
+	(*AddSubjectResponse)(nil),    // 7: authpb.AddSubjectResponse
+	(*DeleteSubjectRequest)(nil),  // 8: authpb.DeleteSubjectRequest
+	(*DeleteSubjectResponse)(nil), // 9: authpb.DeleteSubjectResponse
+	(*GetSubjectIDRequest)(nil),   // 10: authpb.GetSubjectIDRequest
+	(*GetSubjectIDResponse)(nil),  // 11: authpb.GetSubjectIDResponse
 }
 var file_auth_proto_depIdxs = []int32{
-	0,  // 0: auth.LoginService.Login:input_type -> auth.LoginRequest
-	2,  // 1: auth.LoginService.Logout:input_type -> auth.LogoutRequest
-	4,  // 2: auth.LoginService.Refresh:input_type -> auth.RefreshRequest
-	6,  // 3: auth.UserService.AddSubject:input_type -> auth.AddSubjectRequest
-	8,  // 4: auth.UserService.DeleteSubject:input_type -> auth.DeleteSubjectRequest
-	10, // 5: auth.UserService.GetSubjectID:input_type -> auth.GetSubjectIDRequest
-	1,  // 6: auth.LoginService.Login:output_type -> auth.LoginResponse
-	3,  // 7: auth.LoginService.Logout:output_type -> auth.LogoutResponse
-	1,  // 8: auth.LoginService.Refresh:output_type -> auth.LoginResponse
-	7,  // 9: auth.UserService.AddSubject:output_type -> auth.AddSubjectResponse
-	9,  // 10: auth.UserService.DeleteSubject:output_type -> auth.DeleteSubjectResponse
-	11, // 11: auth.UserService.GetSubjectID:output_type -> auth.GetSubjectIDResponse
+	0,  // 0: authpb.AuthorizeService.Login:input_type -> authpb.LoginRequest
+	2,  // 1: authpb.AuthorizeService.Logout:input_type -> authpb.LogoutRequest
+	4,  // 2: authpb.AuthorizeService.Refresh:input_type -> authpb.RefreshRequest
+	6,  // 3: authpb.SubjectService.AddSubject:input_type -> authpb.AddSubjectRequest
+	8,  // 4: authpb.SubjectService.DeleteSubject:input_type -> authpb.DeleteSubjectRequest
+	10, // 5: authpb.SubjectService.GetSubjectID:input_type -> authpb.GetSubjectIDRequest
+	1,  // 6: authpb.AuthorizeService.Login:output_type -> authpb.LoginResponse
+	3,  // 7: authpb.AuthorizeService.Logout:output_type -> authpb.LogoutResponse
+	1,  // 8: authpb.AuthorizeService.Refresh:output_type -> authpb.LoginResponse
+	7,  // 9: authpb.SubjectService.AddSubject:output_type -> authpb.AddSubjectResponse
+	9,  // 10: authpb.SubjectService.DeleteSubject:output_type -> authpb.DeleteSubjectResponse
+	11, // 11: authpb.SubjectService.GetSubjectID:output_type -> authpb.GetSubjectIDResponse
 	6,  // [6:12] is the sub-list for method output_type
 	0,  // [0:6] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
