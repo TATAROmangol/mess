@@ -52,7 +52,7 @@ func (j *JWT) GenerateRefreshTokenWithUserID(userID string) (string, error) {
 
 func (j *JWT) generateTokensWithClaims(claims jwtv5.MapClaims) (string, error) {
 	token := jwtv5.NewWithClaims(jwtv5.SigningMethodHS256, claims)
-	return token.SignedString(j.cfg.SecretKey)
+	return token.SignedString([]byte(j.cfg.SecretKey))
 }
 
 func (j *JWT) GetUserIDFromToken(token string) (string, error) {
