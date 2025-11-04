@@ -1,7 +1,7 @@
 package jwt
 
 type Service interface {
-	GenerateAccessTokenWithUserID(userID string) (string, error)
-	GenerateRefreshTokenWithUserID(userID string) (string, error)
-	GetUserIDFromToken(token string) (string, error)
+	GenerateAccessTokenWithSubjectID(userID string) (string, error)
+	GenerateRefreshTokenWithSubjectID(userID string) (string, error)
+	GetSubjectIDFromToken(token string) (string, error)
 }

@@ -26,18 +26,18 @@ const (
 	ExpiredKey = "exp"
 )
 
-func (j *JWT) GenerateAccessTokenWithUserID(userID string) (string, error) {
+func (j *JWT) GenerateAccessTokenWithSubjectID(subjID string) (string, error) {
 	claims := jwtv5.MapClaims{
-		SubjectKey: userID,
+		SubjectKey: subjID,
 		ExpiredKey: time.Now().Add(j.cfg.AccessTokenTTL).Unix(),
 	}
 
 	return j.generateTokensWithClaims(claims)
 }
 
-func (j *JWT) GenerateRefreshTokenWithUserID(userID string) (string, error) {
+func (j *JWT) GenerateRefreshTokenWithSubjectID(subjID string) (string, error) {
 	claims := jwtv5.MapClaims{
-		SubjectKey: userID,
+		SubjectKey: subjID,
 		ExpiredKey: time.Now().Add(j.cfg.RefreshTokenTTL).Unix(),
 	}
 
@@ -49,7 +49,7 @@ func (j *JWT) generateTokensWithClaims(claims jwtv5.MapClaims) (string, error) {
 	return token.SignedString([]byte(j.cfg.SecretKey))
 }
 
-func (j *JWT) GetUserIDFromToken(token string) (string, error) {
+func (j *JWT) GetSubjectIDFromToken(token string) (string, error) {
 	parsedToken, err := jwtv5.Parse(token, func(t *jwtv5.Token) (any, error) {
 		return []byte(j.cfg.SecretKey), nil
 	})

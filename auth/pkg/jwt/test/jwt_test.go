@@ -13,7 +13,7 @@ var TestConfig = jwt.Config{
 	RefreshTokenTTL: time.Hour * 24 * 7,
 }
 
-func TestJWT_GenerateAccessTokenWithUserID(t *testing.T) {
+func TestJWT_GenerateAccessTokenWithSubjectID(t *testing.T) {
 	tests := []struct {
 		name    string
 		userID  string
@@ -26,7 +26,7 @@ func TestJWT_GenerateAccessTokenWithUserID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			j := jwt.New(TestConfig)
-			token, err := j.GenerateAccessTokenWithUserID(tt.userID)
+			token, err := j.GenerateAccessTokenWithSubjectID(tt.userID)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("GenerateAccessTokenWithUserID() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -40,7 +40,7 @@ func TestJWT_GenerateAccessTokenWithUserID(t *testing.T) {
 				t.Fatalf("GenerateAccessTokenWithUserID() returned invalid JWT: %v", token)
 			}
 
-			gotUserID, err := j.GetUserIDFromToken(token)
+			gotUserID, err := j.GetSubjectIDFromToken(token)
 			if err != nil {
 				t.Fatalf("GetUserIDFromToken() error = %v", err)
 			}
@@ -51,7 +51,7 @@ func TestJWT_GenerateAccessTokenWithUserID(t *testing.T) {
 	}
 }
 
-func TestJWT_GenerateRefreshTokenWithUserID(t *testing.T) {
+func TestJWT_GenerateRefreshTokenWithSubjectID(t *testing.T) {
 	tests := []struct {
 		name    string
 		userID  string
@@ -64,7 +64,7 @@ func TestJWT_GenerateRefreshTokenWithUserID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			j := jwt.New(TestConfig)
-			token, err := j.GenerateRefreshTokenWithUserID(tt.userID)
+			token, err := j.GenerateRefreshTokenWithSubjectID(tt.userID)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("GenerateRefreshTokenWithUserID() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -78,7 +78,7 @@ func TestJWT_GenerateRefreshTokenWithUserID(t *testing.T) {
 				t.Fatalf("GenerateRefreshTokenWithUserID() returned invalid JWT: %v", token)
 			}
 
-			gotUserID, err := j.GetUserIDFromToken(token)
+			gotUserID, err := j.GetSubjectIDFromToken(token)
 			if err != nil {
 				t.Fatalf("GetUserIDFromToken() error = %v", err)
 			}
@@ -89,10 +89,10 @@ func TestJWT_GenerateRefreshTokenWithUserID(t *testing.T) {
 	}
 }
 
-func TestJWT_GetUserIDFromToken(t *testing.T) {
+func TestJWT_GetSubjectIDFromToken(t *testing.T) {
 	j := jwt.New(TestConfig)
 
-	validToken, _ := j.GenerateAccessTokenWithUserID("123")
+	validToken, _ := j.GenerateAccessTokenWithSubjectID("123")
 
 	tests := []struct {
 		name    string
@@ -106,7 +106,7 @@ func TestJWT_GetUserIDFromToken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := j.GetUserIDFromToken(tt.token)
+			got, err := j.GetSubjectIDFromToken(tt.token)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("GetUserIDFromToken() error = %v, wantErr %v", err, tt.wantErr)
 			}
