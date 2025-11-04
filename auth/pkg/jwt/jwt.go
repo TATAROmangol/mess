@@ -7,12 +7,6 @@ import (
 	jwtv5 "github.com/golang-jwt/jwt/v5"
 )
 
-type Service interface {
-	GenerateAccessTokenWithUserID(userID string) (string, error)
-	GenerateRefreshTokenWithUserID(userID string) (string, error)
-	GetUserIDFromToken(token string) (string, error)
-}
-
 type Config struct {
 	SecretKey       string        `json:"secret_key"`
 	AccessTokenTTL  time.Duration `json:"access_token_ttl"`
