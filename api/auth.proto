@@ -1,12 +1,12 @@
 syntax = "proto3";
 
-package auth;
+package authpb;
 
-option go_package = "./auth";
+option go_package = "./pb/authpb";
 
 import "google/api/annotations.proto";
 
-service LoginService {
+service AuthorizeService {
   rpc Login(LoginRequest) returns (LoginResponse) {
     option (google.api.http) = {
       get: "/login"
@@ -48,7 +48,7 @@ message RefreshResponse {
 }
 
 
-service UserService {
+service SubjectService {
   rpc AddSubject(AddSubjectRequest) returns (AddSubjectResponse);
   rpc DeleteSubject(DeleteSubjectRequest) returns (DeleteSubjectResponse);
   rpc GetSubjectID(GetSubjectIDRequest) returns (GetSubjectIDResponse);
