@@ -7,6 +7,11 @@ option go_package = "./pb/authpb";
 import "google/api/annotations.proto";
 
 service AuthorizeService {
+  rpc Register(RegisterRequest) returns (RegisterResponse) {
+    option (google.api.http) = {
+      post: "/register"
+    };
+  }
   rpc Login(LoginRequest) returns (LoginResponse) {
     option (google.api.http) = {
       get: "/login"
@@ -19,13 +24,23 @@ service AuthorizeService {
   }
   rpc Refresh(RefreshRequest) returns (LoginResponse) {
     option (google.api.http) = {
-      get: "/refresh"
+      post: "/refresh"
     };
   }
 }
 
+message RegisterRequest {
+  string login = 1;
+  string password = 2;
+  string email = 3;
+}
+
+message RegisterResponse {
+  string token = 1;
+}
+
 message LoginRequest {
-  string username = 1;
+  string login = 1;
   string password = 2;
 }
 
@@ -33,9 +48,7 @@ message LoginResponse {
   string token = 1;
 }
 
-message LogoutRequest {
-  string token = 1;
-}
+message LogoutRequest {}
 
 message LogoutResponse {
   bool success = 1;
@@ -49,27 +62,7 @@ message RefreshResponse {
 
 
 service SubjectService {
-  rpc AddSubject(AddSubjectRequest) returns (AddSubjectResponse);
-  rpc DeleteSubject(DeleteSubjectRequest) returns (DeleteSubjectResponse);
   rpc GetSubjectID(GetSubjectIDRequest) returns (GetSubjectIDResponse);
-}
-
-message AddSubjectRequest {
-  string subject_id = 1;
-  string login = 2;
-  string password = 3;
-}
-
-message AddSubjectResponse {
-  bool token = 1;
-}
-
-message DeleteSubjectRequest {
-  string subject_id = 1;
-}
-
-message DeleteSubjectResponse {
-  bool success = 1;
 }
 
 message GetSubjectIDRequest {

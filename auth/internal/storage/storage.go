@@ -1,11 +1,11 @@
 package storage
 
-import "database/sql"
+import "github.com/jmoiron/sqlx"
 
 type Storage struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func New(db *sql.DB) *Storage {
+func New(db *sqlx.DB) *Storage {
 	return &Storage{db: db}
 }
