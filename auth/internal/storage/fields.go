@@ -8,4 +8,5 @@ const (
 	PasswordHashColumnField = "password_hash"
 	CreatedAtColumnField    = "created_at"
 	DeletedAtColumnField    = "deleted_at"
+	VersionField            = "version"
 )

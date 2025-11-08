@@ -8,4 +8,5 @@ type Subject struct {
 	PasswordHash string
 	CreatedAt    time.Time
 	DeletedAt    *time.Time
+	Version      int
 }

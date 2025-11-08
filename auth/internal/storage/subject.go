@@ -15,6 +15,7 @@ type SubjectModel struct {
 	PasswordHash string     `db:"password_hash"`
 	CreatedAt    time.Time  `db:"created_at"`
 	DeletedAt    *time.Time `db:"deleted_at"`
+	Version      int        `db:"version"`
 }
 
 func (sm *SubjectModel) ToEntity() *entities.Subject {
@@ -24,6 +25,7 @@ func (sm *SubjectModel) ToEntity() *entities.Subject {
 		PasswordHash: sm.PasswordHash,
 		CreatedAt:    sm.CreatedAt,
 		DeletedAt:    sm.DeletedAt,
+		Version:      sm.Version,
 	}
 }
 
@@ -114,7 +116,7 @@ func (s *Storage) DeleteSubject(ctx context.Context, subjID int) error {
 	return nil
 }
 
-func (s *Storage) ChangePassword(ctx context.Context, subjID int, newPassword string) error {
+func (s *Storage) ChangePasswordHash(ctx context.Context, subjID int, newPassword string) error {
 	old, err := s.GetSubjectByID(ctx, subjID)
 	if err != nil {
 		return fmt.Errorf("get subject by id: %w", err)
@@ -129,10 +131,12 @@ func (s *Storage) ChangePassword(ctx context.Context, subjID int, newPassword st
 	).Set(
 		sq.Record{
 			PasswordHashColumnField: newPassword,
+			VersionField:            old.Version + 1,
 		},
 	).Where(
 		sq.Ex{
 			IDSubjectColumnField: subjID,
+			VersionField:         old.Version,
 		},
 	)
 

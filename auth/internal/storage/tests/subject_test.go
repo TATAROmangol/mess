@@ -202,7 +202,7 @@ func TestStorage_DeleteSubject_Integration(t *testing.T) {
 	}
 }
 
-func TestStorage_ChangePassword_Integration(t *testing.T) {
+func TestStorage_ChangePasswordHash_Integration(t *testing.T) {
 	db, err := setupTestDB()
 	if err != nil {
 		t.Fatalf("setup test db: %v", err)
@@ -221,18 +221,21 @@ func TestStorage_ChangePassword_Integration(t *testing.T) {
 		name        string
 		subjID      int
 		newPassword string
+		version     int
 		expectErr   bool
 	}{
 		{
 			name:        "change password ok",
 			subjID:      existingID,
 			newPassword: "new_hash_123",
+			version:     2,
 			expectErr:   false,
 		},
 		{
 			name:        "change password ok",
 			subjID:      existingID,
 			newPassword: "old_hash",
+			version:     3,
 			expectErr:   false,
 		},
 		{
@@ -245,7 +248,7 @@ func TestStorage_ChangePassword_Integration(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := s.ChangePassword(ctx, tt.subjID, tt.newPassword)
+			err := s.ChangePasswordHash(ctx, tt.subjID, tt.newPassword)
 			if (err != nil) != tt.expectErr {
 				t.Fatalf("expected error=%v got %v", tt.expectErr, err)
 			}
@@ -261,6 +264,10 @@ func TestStorage_ChangePassword_Integration(t *testing.T) {
 
 			if subj.PasswordHash != tt.newPassword {
 				t.Fatalf("password not updated: got=%s want=%s", subj.PasswordHash, tt.newPassword)
+			}
+
+			if subj.Version != tt.version {
+				t.Fatalf("version not incremented: got=%d want=%d", subj.Version, tt.version)
 			}
 		})
 	}
