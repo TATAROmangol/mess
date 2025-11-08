@@ -27,6 +27,11 @@ service AuthorizeService {
       post: "/refresh"
     };
   }
+  rpc ChangePassword(ChangePasswordRequest) returns (LogoutResponse) {
+    option (google.api.http) = {
+      post: "/change/password"
+    };
+  }
 }
 
 message RegisterRequest {
@@ -58,6 +63,11 @@ message RefreshRequest {}
 
 message RefreshResponse {
   string token = 1;
+}
+
+message ChangePasswordRequest {
+  string old_password = 1;
+  string new_password = 2;
 }
 
 
