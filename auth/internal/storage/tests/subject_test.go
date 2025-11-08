@@ -212,52 +212,48 @@ func TestStorage_ChangePasswordHash_Integration(t *testing.T) {
 	s := storage.New(db)
 	ctx := context.Background()
 
-	existingID, err := s.CreateSubject(ctx, "user_change", "old_hash")
-	if err != nil {
-		t.Fatalf("CreateSubject failed: %v", err)
-	}
-
 	tests := []struct {
 		name        string
-		subjID      int
 		newPassword string
 		version     int
 		expectErr   bool
 	}{
 		{
 			name:        "change password ok",
-			subjID:      existingID,
 			newPassword: "new_hash_123",
 			version:     2,
 			expectErr:   false,
 		},
 		{
-			name:        "change password ok",
-			subjID:      existingID,
+			name:        "change password ok duplicate",
 			newPassword: "old_hash",
-			version:     3,
+			version:     2,
 			expectErr:   false,
-		},
-		{
-			name:        "non-existent user",
-			subjID:      99999,
-			newPassword: "whatever",
-			expectErr:   true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := s.ChangePasswordHash(ctx, tt.subjID, tt.newPassword)
+			existingID, err := s.CreateSubject(ctx, tt.name, "old_hash")
+			if err != nil {
+				t.Fatalf("CreateSubject failed: %v", err)
+			}
+
+			cur, err := s.GetSubjectByID(ctx, existingID)
+			if err != nil {
+				t.Fatalf("GetSubjectByID failed: %v", err)
+			}
+
+			err = s.ChangePasswordHash(ctx, cur, tt.newPassword)
 			if (err != nil) != tt.expectErr {
-				t.Fatalf("expected error=%v got %v", tt.expectErr, err)
+				t.Fatalf("expected error=%v got %v subj %v", tt.expectErr, err, *cur)
 			}
 
 			if tt.expectErr {
 				return
 			}
 
-			subj, err := s.GetSubjectByID(ctx, tt.subjID)
+			subj, err := s.GetSubjectByID(ctx, cur.ID)
 			if err != nil {
 				t.Fatalf("GetSubjectByID failed: %v", err)
 			}

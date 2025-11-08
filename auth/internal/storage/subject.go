@@ -116,27 +116,18 @@ func (s *Storage) DeleteSubject(ctx context.Context, subjID int) error {
 	return nil
 }
 
-func (s *Storage) ChangePasswordHash(ctx context.Context, subjID int, newPassword string) error {
-	old, err := s.GetSubjectByID(ctx, subjID)
-	if err != nil {
-		return fmt.Errorf("get subject by id: %w", err)
-	}
-
-	if old.PasswordHash == newPassword {
-		return ErrorLastHash
-	}
-
+func (s *Storage) ChangePasswordHash(ctx context.Context, oldSubj *entities.Subject, newPassword string) error {
 	query := sq.Update(
 		SubjectTableField,
 	).Set(
 		sq.Record{
 			PasswordHashColumnField: newPassword,
-			VersionField:            old.Version + 1,
+			VersionField:            oldSubj.Version + 1,
 		},
 	).Where(
 		sq.Ex{
-			IDSubjectColumnField: subjID,
-			VersionField:         old.Version,
+			IDSubjectColumnField: oldSubj.ID,
+			VersionField:         oldSubj.Version,
 		},
 	)
 
