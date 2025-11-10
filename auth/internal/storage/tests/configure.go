@@ -5,8 +5,7 @@ import (
 	"auth/pkg/sqlxdb"
 	"fmt"
 
-	sq "github.com/doug-martin/goqu/v9"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
+	sq "github.com/huandu/go-sqlbuilder"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -46,14 +45,11 @@ func setupTestDB() (*sqlx.DB, error) {
 }
 
 func truncateTables(db *sqlx.DB, table string) error {
-	query := sq.Truncate(table).Cascade()
+	query := sq.NewDeleteBuilder().DeleteFrom(storage.SubjectTableField)
 
-	sqlStr, args, err := query.ToSQL()
-	if err != nil {
-		return fmt.Errorf("to sql: %w", err)
-	}
+	sqlStr, args := query.BuildWithFlavor(sq.PostgreSQL)
 
-	_, err = db.Exec(sqlStr, args...)
+	_, err := db.Exec(sqlStr, args...)
 	if err != nil {
 		return fmt.Errorf("truncate table %s: %w", table, err)
 	}

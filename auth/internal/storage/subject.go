@@ -3,10 +3,11 @@ package storage
 import (
 	"auth/internal/entities"
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
 
-	sq "github.com/doug-martin/goqu/v9"
+	sq "github.com/huandu/go-sqlbuilder"
 )
 
 type SubjectModel struct {
@@ -35,21 +36,22 @@ var (
 )
 
 func (s *Storage) GetSubjectByID(ctx context.Context, subjID int) (*entities.Subject, error) {
-	query := sq.From(
-		SubjectTableField,
-	).Where(sq.Ex{
-		IDSubjectColumnField: subjID,
-		DeletedAtColumnField: nil,
-	})
+	query := sq.NewSelectBuilder()
+	query.Select(SelectAllField).
+		From(SubjectTableField).
+		Where(
+			query.Equal(IDSubjectColumnField, subjID),
+			query.IsNull(DeletedAtColumnField),
+		)
 
-	sqlStr, args, err := query.ToSQL()
-	if err != nil {
-		return nil, fmt.Errorf("to sql: %w", err)
-	}
+	sqlStr, args := query.BuildWithFlavor(sq.PostgreSQL)
 
 	var sm SubjectModel
-	err = s.db.GetContext(ctx, &sm, sqlStr, args...)
+	err := s.db.GetContext(ctx, &sm, sqlStr, args...)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrorNotFound
+		}
 		return nil, fmt.Errorf("query row context: %w", err)
 	}
 
@@ -57,23 +59,24 @@ func (s *Storage) GetSubjectByID(ctx context.Context, subjID int) (*entities.Sub
 }
 
 func (s *Storage) CreateSubject(ctx context.Context, login, password string) (int, error) {
-	query := sq.Insert(
-		SubjectTableField,
-	).Rows(sq.Record{
-		LoginColumnField:        login,
-		PasswordHashColumnField: password,
-		CreatedAtColumnField:    time.Now(),
-	}).Returning(
+	query := sq.NewInsertBuilder()
+	query.InsertInto(SubjectTableField).
+		Cols(
+			LoginColumnField,
+			PasswordHashColumnField,
+			CreatedAtColumnField,
+		).Values(
+		login,
+		password,
+		time.Now(),
+	).Returning(
 		IDSubjectColumnField,
 	)
 
-	sqlStr, args, err := query.ToSQL()
-	if err != nil {
-		return 0, fmt.Errorf("to sql: %w", err)
-	}
+	sqlStr, args := query.BuildWithFlavor(sq.PostgreSQL)
 
 	var id int
-	err = s.db.QueryRowContext(ctx, sqlStr, args...).Scan(&id)
+	err := s.db.QueryRowContext(ctx, sqlStr, args...).Scan(&id)
 	if err != nil {
 		return 0, fmt.Errorf("query row context: %w", err)
 	}
@@ -82,22 +85,16 @@ func (s *Storage) CreateSubject(ctx context.Context, login, password string) (in
 }
 
 func (s *Storage) DeleteSubject(ctx context.Context, subjID int) error {
-	query := sq.Update(
-		SubjectTableField,
-	).Set(
-		sq.Record{
-			DeletedAtColumnField: time.Now(),
-		},
-	).Where(
-		sq.Ex{
-			IDSubjectColumnField: subjID,
-		},
+	query := sq.NewUpdateBuilder()
+
+	query.Update(SubjectTableField).
+		Set(
+			query.Assign(DeletedAtColumnField, time.Now()),
+		).Where(
+		query.Equal(IDSubjectColumnField, subjID),
 	)
 
-	sqlStr, args, err := query.ToSQL()
-	if err != nil {
-		return fmt.Errorf("to sql: %w", err)
-	}
+	sqlStr, args := query.BuildWithFlavor(sq.PostgreSQL)
 
 	res, err := s.db.ExecContext(ctx, sqlStr, args...)
 	if err != nil {
@@ -117,24 +114,18 @@ func (s *Storage) DeleteSubject(ctx context.Context, subjID int) error {
 }
 
 func (s *Storage) ChangePasswordHash(ctx context.Context, oldSubj *entities.Subject, newPassword string) error {
-	query := sq.Update(
-		SubjectTableField,
-	).Set(
-		sq.Record{
-			PasswordHashColumnField: newPassword,
-			VersionField:            oldSubj.Version + 1,
-		},
-	).Where(
-		sq.Ex{
-			IDSubjectColumnField: oldSubj.ID,
-			VersionField:         oldSubj.Version,
-		},
+	query := sq.NewUpdateBuilder()
+
+	query.Update(SubjectTableField).
+		Set(
+			query.Assign(PasswordHashColumnField, newPassword),
+			query.Assign(VersionField, oldSubj.Version+1),
+		).Where(
+		query.Equal(IDSubjectColumnField, oldSubj.ID),
+		query.Equal(VersionField, oldSubj.Version),
 	)
 
-	sqlStr, args, err := query.ToSQL()
-	if err != nil {
-		return fmt.Errorf("to sql: %w", err)
-	}
+	sqlStr, args := query.BuildWithFlavor(sq.PostgreSQL)
 
 	res, err := s.db.ExecContext(ctx, sqlStr, args...)
 	if err != nil {

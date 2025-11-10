@@ -1,5 +1,10 @@
 package storage
 
+//helps
+const (
+	SelectAllField = "*"
+)
+
 // user table fields
 const (
 	SubjectTableField       = "subject"

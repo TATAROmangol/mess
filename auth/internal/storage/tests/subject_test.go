@@ -6,8 +6,6 @@ import (
 
 	"auth/internal/entities"
 	"auth/internal/storage"
-
-	_ "github.com/mattn/go-sqlite3"
 )
 
 func TestStorage_CreateSubject_Integration(t *testing.T) {
