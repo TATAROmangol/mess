@@ -2,9 +2,8 @@ package domain
 
 import (
 	"context"
-	"fmt"
+	"tokenissuer/internal/adapter/identifier"
 	"tokenissuer/internal/model"
-	"tokenissuer/pkg/openidconnect"
 )
 
 type TokenService interface {
@@ -15,26 +14,15 @@ type TokenVerifier interface {
 }
 
 type TokenDomain struct {
-	ocid openidconnect.Service
+	iden identifier.Service
 }
 
-func NewTokenDomain(ocid openidconnect.Service) *TokenDomain {
+func NewTokenDomain(iden identifier.Service) *TokenDomain {
 	return &TokenDomain{
-		ocid: ocid,
+		iden: iden,
 	}
 }
 
 func (td *TokenDomain) VerifyToken(ctx context.Context, accessToken string) (*model.User, error) {
-	respSubj, err := td.ocid.VerifyToken(ctx, accessToken)
-	if err != nil {
-		return nil, fmt.Errorf("verify token: %w", err)
-	}
-
-	subj := model.User{
-		ID:    respSubj.GetID(),
-		Name:  respSubj.GetName(),
-		Email: respSubj.GetEmail(),
-	}
-
-	return &subj, nil
+	return nil, nil
 }
