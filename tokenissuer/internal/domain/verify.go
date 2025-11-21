@@ -14,6 +14,7 @@ import (
 )
 
 const (
+	KidHeader     = "kid"
 	SubClaim      = "sub"
 	EmailClaim    = "email"
 	UsernameClaim = "preferred_username"
@@ -40,34 +41,29 @@ func NewVerify(iden identifier.Service) *Verify {
 	}
 }
 
-func (v *Verify) VerifyToken(ctx context.Context, accessToken string) (*model.User, error) {
-	//TODO...
-	return nil, nil
-}
-
-func (k *Verify) findKeyByKid(ctx context.Context, kid string) (*rsa.PublicKey, error) {
-	k.mu.RLock()
-	jwk, ok := k.jwks[kid]
-	if ok && time.Since(k.jwksUpdated) < k.jwksTTL {
-		k.mu.RUnlock()
+func (v *Verify) findKeyByKid(ctx context.Context, kid string) (*rsa.PublicKey, error) {
+	v.mu.RLock()
+	jwk, ok := v.jwks[kid]
+	if ok && time.Since(v.jwksUpdated) < v.jwksTTL {
+		v.mu.RUnlock()
 		return jwk.GetPublicKey()
 	}
-	k.mu.RUnlock()
+	v.mu.RUnlock()
 
-	k.mu.Lock()
-	if jwk, ok := k.jwks[kid]; ok && time.Since(k.jwksUpdated) < k.jwksTTL {
+	v.mu.Lock()
+	if jwk, ok := v.jwks[kid]; ok && time.Since(v.jwksUpdated) < v.jwksTTL {
 		return jwk.GetPublicKey()
 	}
 
-	res, err := k.iden.LoadJWKS(ctx)
+	res, err := v.iden.LoadJWKS(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("load jwks: %w", err)
 	}
 
-	k.jwks = res
-	k.mu.Unlock()
+	v.jwks = res
+	v.mu.Unlock()
 
-	jwk, ok = k.jwks[kid]
+	jwk, ok = v.jwks[kid]
 	if !ok {
 		return nil, fmt.Errorf("kid=%s not found", kid)
 	}
@@ -75,18 +71,18 @@ func (k *Verify) findKeyByKid(ctx context.Context, kid string) (*rsa.PublicKey, 
 	return jwk.GetPublicKey()
 }
 
-func (k *Verify) VerifyAccessToken(ctx context.Context, accessToken string) (*model.User, error) {
-	token, _, err := k.parser.ParseUnverified(accessToken, jwt.MapClaims{})
+func (v *Verify) VerifyToken(ctx context.Context, accessToken string) (*model.User, error) {
+	token, _, err := v.parser.ParseUnverified(accessToken, jwt.MapClaims{})
 	if err != nil {
 		return nil, fmt.Errorf("parse unverified: %w", err)
 	}
 
-	kid, ok := token.Header["kid"].(string)
+	kid, ok := token.Header[KidHeader].(string)
 	if !ok {
 		return nil, fmt.Errorf("no kid in token header")
 	}
 
-	pubKey, err := k.findKeyByKid(ctx, kid)
+	pubKey, err := v.findKeyByKid(ctx, kid)
 	if err != nil {
 		return nil, fmt.Errorf("find key by kid: %w", err)
 	}

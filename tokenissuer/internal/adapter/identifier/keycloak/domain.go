@@ -19,7 +19,7 @@ const (
 	ClientSecretField = "client_secret"
 )
 
-func (k *Keycloak) ExchangeCode(ctx context.Context, code string, redirectURL string) (identifier.TokenInfo, error) {
+func (k *Keycloak) ExchangeCode(ctx context.Context, code string, redirectURL string) (identifier.TokenPair, error) {
 	resp, err := k.client.R().
 		SetContext(ctx).
 		SetFormData(map[string]string{
@@ -40,10 +40,10 @@ func (k *Keycloak) ExchangeCode(ctx context.Context, code string, redirectURL st
 		return nil, fmt.Errorf("response: %s", resp.String())
 	}
 
-	return resp.Result().(identifier.TokenInfo), nil
+	return resp.Result().(identifier.TokenPair), nil
 }
 
-func (k *Keycloak) Refresh(ctx context.Context, refreshToken string) (identifier.TokenInfo, error) {
+func (k *Keycloak) Refresh(ctx context.Context, refreshToken string) (identifier.TokenPair, error) {
 	resp, err := k.client.R().
 		SetContext(ctx).
 		SetFormData(map[string]string{
@@ -63,7 +63,7 @@ func (k *Keycloak) Refresh(ctx context.Context, refreshToken string) (identifier
 		return nil, fmt.Errorf("response: %s", resp.String())
 	}
 
-	return resp.Result().(identifier.TokenInfo), nil
+	return resp.Result().(identifier.TokenPair), nil
 }
 
 func (k *Keycloak) LoadJWKS(ctx context.Context) (map[string]jwks.JWKS, error) {

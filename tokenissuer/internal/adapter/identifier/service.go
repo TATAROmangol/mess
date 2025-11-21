@@ -5,7 +5,7 @@ import (
 	"tokenissuer/pkg/jwks"
 )
 
-type TokenInfo interface {
+type TokenPair interface {
 	GetAccessToken() string
 	GetRefreshToken() string
 	GetExpiresIn() int
@@ -14,11 +14,11 @@ type TokenInfo interface {
 }
 
 type CodeExchanger interface {
-	ExchangeCode(ctx context.Context, code string, redirectURL string) (*TokenInfo, error)
+	ExchangeCode(ctx context.Context, code string, redirectURL string) (TokenPair, error)
 }
 
 type TokenRefresher interface {
-	Refresh(ctx context.Context, refreshToken string) (*TokenInfo, error)
+	Refresh(ctx context.Context, refreshToken string) (TokenPair, error)
 }
 
 type JWKSLoader interface {
