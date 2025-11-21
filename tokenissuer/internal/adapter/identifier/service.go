@@ -1,5 +1,10 @@
 package identifier
 
+import (
+	"context"
+	"tokenissuer/pkg/jwks"
+)
+
 type TokenInfo interface {
 	GetAccessToken() string
 	GetRefreshToken() string
@@ -8,7 +13,20 @@ type TokenInfo interface {
 	GetTokenType() string
 }
 
+type CodeExchanger interface {
+	ExchangeCode(ctx context.Context, code string, redirectURL string) (*TokenInfo, error)
+}
+
+type TokenRefresher interface {
+	Refresh(ctx context.Context, refreshToken string) (*TokenInfo, error)
+}
+
+type JWKSLoader interface {
+	LoadJWKS(ctx context.Context) (map[string]jwks.JWKS, error)
+}
+
 type Service interface {
-	ExchangeCode(code string, redirectURL string) (TokenInfo, error)
-	Refresh(refreshToken string) (TokenInfo, error)
+	CodeExchanger
+	TokenRefresher
+	JWKSLoader
 }

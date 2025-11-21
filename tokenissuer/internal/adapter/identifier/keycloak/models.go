@@ -1,12 +1,5 @@
 package keycloak
 
-import (
-	"crypto/rsa"
-	"encoding/base64"
-	"fmt"
-	"math/big"
-)
-
 type TokenResponse struct {
 	AccessToken      string `json:"access_token"`
 	RefreshToken     string `json:"refresh_token"`
@@ -33,50 +26,4 @@ func (t *TokenResponse) GetRefreshExpiresIn() int {
 
 func (t *TokenResponse) GetTokenType() string {
 	return t.TokenType
-}
-
-type JWKS struct {
-	Kid string `json:"kid"`
-	Kty string `json:"kty"`
-	Alg string `json:"alg"`
-	Use string `json:"use"`
-	N   string `json:"n"`
-	E   string `json:"e"`
-}
-
-func (j JWKS) ToPublicKey() (*rsa.PublicKey, error) {
-	nb, err := base64.RawURLEncoding.DecodeString(j.N)
-	if err != nil {
-		return nil, fmt.Errorf("decode n: %w", err)
-	}
-
-	eb, err := base64.RawURLEncoding.DecodeString(j.E)
-	if err != nil {
-		return nil, fmt.Errorf("decode e: %w", err)
-	}
-
-	e := big.NewInt(0).SetBytes(eb).Int64()
-
-	return &rsa.PublicKey{
-		N: new(big.Int).SetBytes(nb),
-		E: int(e),
-	}, nil
-}
-
-type User struct {
-	ID    string
-	Name  string
-	Email string
-}
-
-func (s *User) GetID() string {
-	return s.Name
-}
-
-func (s *User) GetName() string {
-	return s.Name
-}
-
-func (s *User) GetEmail() string {
-	return s.Email
 }
