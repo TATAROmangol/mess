@@ -71,7 +71,7 @@ func (k *Keycloak) LoadJWKS(ctx context.Context) (map[string]jwks.JWKS, error) {
 	resp, err := k.client.R().
 		SetContext(ctx).
 		SetResult(&struct {
-			Keys []jwks.JWKSToken `json:"keys"`
+			Keys []jwks.JWKSImpl `json:"keys"`
 		}{}).
 		Get(k.cfg.JWKSEndpoint)
 
@@ -84,7 +84,7 @@ func (k *Keycloak) LoadJWKS(ctx context.Context) (map[string]jwks.JWKS, error) {
 	}
 
 	result := resp.Result().(*struct {
-		Keys []jwks.JWKSToken `json:"keys"`
+		Keys []jwks.JWKSImpl `json:"keys"`
 	})
 
 	for _, jwks := range result.Keys {

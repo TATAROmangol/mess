@@ -21,27 +21,28 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type ValidateRequest struct {
+type VerifyRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AccessToken   string                 `protobuf:"bytes,1,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"`
+	TokenType     string                 `protobuf:"bytes,2,opt,name=token_type,json=tokenType,proto3" json:"token_type,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ValidateRequest) Reset() {
-	*x = ValidateRequest{}
+func (x *VerifyRequest) Reset() {
+	*x = VerifyRequest{}
 	mi := &file_proto_tokenissuer_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ValidateRequest) String() string {
+func (x *VerifyRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ValidateRequest) ProtoMessage() {}
+func (*VerifyRequest) ProtoMessage() {}
 
-func (x *ValidateRequest) ProtoReflect() protoreflect.Message {
+func (x *VerifyRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_tokenissuer_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -53,39 +54,48 @@ func (x *ValidateRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ValidateRequest.ProtoReflect.Descriptor instead.
-func (*ValidateRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use VerifyRequest.ProtoReflect.Descriptor instead.
+func (*VerifyRequest) Descriptor() ([]byte, []int) {
 	return file_proto_tokenissuer_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *ValidateRequest) GetAccessToken() string {
+func (x *VerifyRequest) GetAccessToken() string {
 	if x != nil {
 		return x.AccessToken
 	}
 	return ""
 }
 
-type ValidateResponse struct {
+func (x *VerifyRequest) GetTokenType() string {
+	if x != nil {
+		return x.TokenType
+	}
+	return ""
+}
+
+type VerifyResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	SubjectId     string                 `protobuf:"bytes,1,opt,name=subject_id,json=subjectId,proto3" json:"subject_id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *ValidateResponse) Reset() {
-	*x = ValidateResponse{}
+func (x *VerifyResponse) Reset() {
+	*x = VerifyResponse{}
 	mi := &file_proto_tokenissuer_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ValidateResponse) String() string {
+func (x *VerifyResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ValidateResponse) ProtoMessage() {}
+func (*VerifyResponse) ProtoMessage() {}
 
-func (x *ValidateResponse) ProtoReflect() protoreflect.Message {
+func (x *VerifyResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_proto_tokenissuer_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -97,14 +107,28 @@ func (x *ValidateResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ValidateResponse.ProtoReflect.Descriptor instead.
-func (*ValidateResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use VerifyResponse.ProtoReflect.Descriptor instead.
+func (*VerifyResponse) Descriptor() ([]byte, []int) {
 	return file_proto_tokenissuer_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *ValidateResponse) GetSubjectId() string {
+func (x *VerifyResponse) GetSubjectId() string {
 	if x != nil {
 		return x.SubjectId
+	}
+	return ""
+}
+
+func (x *VerifyResponse) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *VerifyResponse) GetEmail() string {
+	if x != nil {
+		return x.Email
 	}
 	return ""
 }
@@ -113,14 +137,18 @@ var File_proto_tokenissuer_proto protoreflect.FileDescriptor
 
 const file_proto_tokenissuer_proto_rawDesc = "" +
 	"\n" +
-	"\x17proto/tokenissuer.proto\x12\vtokenissuer\"4\n" +
-	"\x0fValidateRequest\x12!\n" +
-	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\"1\n" +
-	"\x10ValidateResponse\x12\x1d\n" +
+	"\x17proto/tokenissuer.proto\x12\vtokenissuer\"Q\n" +
+	"\rVerifyRequest\x12!\n" +
+	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x1d\n" +
 	"\n" +
-	"subject_id\x18\x01 \x01(\tR\tsubjectId2Y\n" +
-	"\x0eTokenValidator\x12G\n" +
-	"\bValidate\x12\x1c.tokenissuer.ValidateRequest\x1a\x1d.tokenissuer.ValidateResponseB\x14Z\x12./pb/tokenissuerpbb\x06proto3"
+	"token_type\x18\x02 \x01(\tR\ttokenType\"Y\n" +
+	"\x0eVerifyResponse\x12\x1d\n" +
+	"\n" +
+	"subject_id\x18\x01 \x01(\tR\tsubjectId\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
+	"\x05email\x18\x03 \x01(\tR\x05email2R\n" +
+	"\rTokenVerifier\x12A\n" +
+	"\x06Verify\x12\x1a.tokenissuer.VerifyRequest\x1a\x1b.tokenissuer.VerifyResponseB\x14Z\x12./pb/tokenissuerpbb\x06proto3"
 
 var (
 	file_proto_tokenissuer_proto_rawDescOnce sync.Once
@@ -136,12 +164,12 @@ func file_proto_tokenissuer_proto_rawDescGZIP() []byte {
 
 var file_proto_tokenissuer_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_proto_tokenissuer_proto_goTypes = []any{
-	(*ValidateRequest)(nil),  // 0: tokenissuer.ValidateRequest
-	(*ValidateResponse)(nil), // 1: tokenissuer.ValidateResponse
+	(*VerifyRequest)(nil),  // 0: tokenissuer.VerifyRequest
+	(*VerifyResponse)(nil), // 1: tokenissuer.VerifyResponse
 }
 var file_proto_tokenissuer_proto_depIdxs = []int32{
-	0, // 0: tokenissuer.TokenValidator.Validate:input_type -> tokenissuer.ValidateRequest
-	1, // 1: tokenissuer.TokenValidator.Validate:output_type -> tokenissuer.ValidateResponse
+	0, // 0: tokenissuer.TokenVerifier.Verify:input_type -> tokenissuer.VerifyRequest
+	1, // 1: tokenissuer.TokenVerifier.Verify:output_type -> tokenissuer.VerifyResponse
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name

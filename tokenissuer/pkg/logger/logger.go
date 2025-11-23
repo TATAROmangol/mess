@@ -6,20 +6,29 @@ import (
 	"log/slog"
 )
 
-type Logger struct {
+const (
+	OkMessage = "OK"
+)
+
+type Logger interface {
+	InfoContext(ctx context.Context, msg string)
+	ErrorContext(ctx context.Context, err error)
+}
+
+type Log struct {
 	slog  *slog.Logger
 	parse func(ctx context.Context) map[string]any
 }
 
-func New(w io.Writer, parseFunc func(ctx context.Context) map[string]any) *Logger {
+func New(w io.Writer, parseFunc func(ctx context.Context) map[string]any) *Log {
 	handler := slog.NewTextHandler(w, nil)
-	return &Logger{
+	return &Log{
 		slog:  slog.New(handler),
 		parse: parseFunc,
 	}
 }
 
-func (l *Logger) InfoContext(ctx context.Context, msg string) {
+func (l *Log) InfoContext(ctx context.Context, msg string) {
 	attrs := []slog.Attr{}
 	for k, v := range l.parse(ctx) {
 		attrs = append(attrs, slog.Any(k, v))
@@ -27,10 +36,10 @@ func (l *Logger) InfoContext(ctx context.Context, msg string) {
 	l.slog.LogAttrs(ctx, slog.LevelInfo, msg, attrs...)
 }
 
-func (l *Logger) ErrorContext(ctx context.Context, msg string) {
+func (l *Log) ErrorContext(ctx context.Context, err error) {
 	attrs := []slog.Attr{}
 	for k, v := range l.parse(ctx) {
 		attrs = append(attrs, slog.Any(k, v))
 	}
-	l.slog.LogAttrs(ctx, slog.LevelError, msg, attrs...)
+	l.slog.LogAttrs(ctx, slog.LevelError, err.Error(), attrs...)
 }

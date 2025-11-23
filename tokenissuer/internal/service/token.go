@@ -1,4 +1,4 @@
-package domain
+package service
 
 import (
 	"context"
@@ -6,22 +6,22 @@ import (
 	"tokenissuer/internal/adapter/identifier"
 )
 
-type TokenService interface {
+type Token interface {
 	RefreshTokenPair(ctx context.Context, refreshToken string) (identifier.TokenPair, error)
 	GetTokenPair(ctx context.Context, code string, redirectURL string) (identifier.TokenPair, error)
 }
 
-type TokenDomain struct {
+type TokenImpl struct {
 	iden identifier.Service
 }
 
-func NewTokenDomain(iden identifier.Service) *TokenDomain {
-	return &TokenDomain{
+func NewTokenDomain(iden identifier.Service) *TokenImpl {
+	return &TokenImpl{
 		iden: iden,
 	}
 }
 
-func (td *TokenDomain) RefreshTokenPair(ctx context.Context, refreshToken string) (identifier.TokenPair, error) {
+func (td *TokenImpl) RefreshTokenPair(ctx context.Context, refreshToken string) (identifier.TokenPair, error) {
 	pair, err := td.iden.Refresh(ctx, refreshToken)
 	if err != nil {
 		return nil, fmt.Errorf("refresh: %w", err)
@@ -30,7 +30,7 @@ func (td *TokenDomain) RefreshTokenPair(ctx context.Context, refreshToken string
 	return pair, nil
 }
 
-func (td *TokenDomain) GetTokenPair(ctx context.Context, code string, redirectURL string) (identifier.TokenPair, error) {
+func (td *TokenImpl) GetTokenPair(ctx context.Context, code string, redirectURL string) (identifier.TokenPair, error) {
 	pair, err := td.iden.ExchangeCode(ctx, code, redirectURL)
 	if err != nil {
 		return nil, fmt.Errorf("exchange code: %w", err)

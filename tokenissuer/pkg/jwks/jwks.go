@@ -11,7 +11,7 @@ type JWKS interface {
 	GetPublicKey() (*rsa.PublicKey, error)
 }
 
-type JWKSToken struct {
+type JWKSImpl struct {
 	Kid string `json:"kid"`
 	Kty string `json:"kty"`
 	Alg string `json:"alg"`
@@ -20,7 +20,7 @@ type JWKSToken struct {
 	E   string `json:"e"`
 }
 
-func (j JWKSToken) GetPublicKey() (*rsa.PublicKey, error) {
+func (j JWKSImpl) GetPublicKey() (*rsa.PublicKey, error) {
 	nb, err := base64.RawURLEncoding.DecodeString(j.N)
 	if err != nil {
 		return nil, fmt.Errorf("decode n: %w", err)

@@ -1,4 +1,4 @@
-package domain
+package service
 
 import (
 	"context"
@@ -20,11 +20,11 @@ const (
 	UsernameClaim = "preferred_username"
 )
 
-type VerifyService interface {
-	VerifyToken(ctx context.Context, accessToken string) (*model.User, error)
+type Verify interface {
+	VerifyToken(ctx context.Context, typeToken, accessToken string) (*model.User, error)
 }
 
-type Verify struct {
+type VerifyImpl struct {
 	iden identifier.JWKSLoader
 
 	jwks        map[string]jwks.JWKS
@@ -35,13 +35,13 @@ type Verify struct {
 	mu     sync.RWMutex
 }
 
-func NewVerify(iden identifier.Service) *Verify {
-	return &Verify{
+func NewVerifyImpl(iden identifier.Service) *VerifyImpl {
+	return &VerifyImpl{
 		iden: iden,
 	}
 }
 
-func (v *Verify) findKeyByKid(ctx context.Context, kid string) (*rsa.PublicKey, error) {
+func (v *VerifyImpl) findKeyByKid(ctx context.Context, kid string) (*rsa.PublicKey, error) {
 	v.mu.RLock()
 	jwk, ok := v.jwks[kid]
 	if ok && time.Since(v.jwksUpdated) < v.jwksTTL {
@@ -71,7 +71,8 @@ func (v *Verify) findKeyByKid(ctx context.Context, kid string) (*rsa.PublicKey, 
 	return jwk.GetPublicKey()
 }
 
-func (v *Verify) VerifyToken(ctx context.Context, accessToken string) (*model.User, error) {
+func (v *VerifyImpl) VerifyToken(ctx context.Context, typeToken, accessToken string) (*model.User, error) {
+	
 	token, _, err := v.parser.ParseUnverified(accessToken, jwt.MapClaims{})
 	if err != nil {
 		return nil, fmt.Errorf("parse unverified: %w", err)
