@@ -39,9 +39,16 @@ func main() {
 	}
 
 	l := logger.New(os.Stdin, ctxkey.Parse)
+	ctx := context.Background()
 
 	iden := keycloak.NewKeycloak(cfg.Keycloak)
-	service := service.NewServiceImpl(iden, time.Hour)
+	token := service.NewTokenImpl(iden)
+	ver, err := service.NewVerifyImpl(ctx, iden, 5*time.Minute)
+	if err != nil {
+		l.Error(fmt.Errorf("new verify impl: %w", err))
+		os.Exit(1)
+	}
+	service := service.NewServiceImpl(token, ver)
 
 	httpHandler := rest.NewHandler(service.Token)
 	httpMiddleware := rest.NewMiddleware(l)
@@ -71,7 +78,7 @@ func main() {
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 	<-stop
 
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	l.Info("Shutting down servers...")

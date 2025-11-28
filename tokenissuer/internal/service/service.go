@@ -1,10 +1,5 @@
 package service
 
-import (
-	"time"
-	"tokenissuer/internal/adapter/identifier"
-)
-
 type Service interface {
 	TokenService() Token
 	VerifyService() Verify
@@ -15,9 +10,9 @@ type ServiceImpl struct {
 	Verify
 }
 
-func NewServiceImpl(iden identifier.Service, jwksTTL time.Duration) *ServiceImpl {
+func NewServiceImpl(token Token, verify Verify) *ServiceImpl {
 	return &ServiceImpl{
-		Token:  NewTokenImpl(iden),
-		Verify: NewVerifyImpl(iden, jwksTTL),
+		Token:  token,
+		Verify: verify,
 	}
 }

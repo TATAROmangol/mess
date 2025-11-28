@@ -11,6 +11,7 @@ import (
 	"tokenissuer/pkg/jwks"
 
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/sync/singleflight"
 )
 
 const (
@@ -19,6 +20,8 @@ const (
 	EmailClaim    = "email"
 	UsernameClaim = "preferred_username"
 	BearerType    = "Bearer:"
+
+	JWKSUpdateKey = "jwks_update"
 )
 
 type Verify interface {
@@ -28,50 +31,73 @@ type Verify interface {
 type VerifyImpl struct {
 	iden identifier.JWKSLoader
 
-	jwks        map[string]jwks.JWKS
-	jwksUpdated time.Time
-	jwksTTL     time.Duration
+	jwks            map[string]jwks.JWKS
+	jwksLastUpdated time.Time
+	jwksRateLimit   time.Duration
 
 	parser *jwt.Parser
-	mu     *sync.RWMutex
+
+	mu *sync.RWMutex
+	sf singleflight.Group
 }
 
-func NewVerifyImpl(iden identifier.JWKSLoader, jwksTTL time.Duration) *VerifyImpl {
-	return &VerifyImpl{
-		iden: iden,
-
-		jwks:        make(map[string]jwks.JWKS),
-		jwksUpdated: time.Now(),
-		jwksTTL:     jwksTTL,
-
-		parser: jwt.NewParser(),
-		mu:     &sync.RWMutex{},
-	}
-}
-
-func (v *VerifyImpl) findKeyByKid(ctx context.Context, kid string) (*rsa.PublicKey, error) {
-	v.mu.RLock()
-	jwk, ok := v.jwks[kid]
-	if ok && time.Since(v.jwksUpdated) < v.jwksTTL {
-		v.mu.RUnlock()
-		return jwk.GetPublicKey()
-	}
-	v.mu.RUnlock()
-
-	v.mu.Lock()
-	if jwk, ok := v.jwks[kid]; ok && time.Since(v.jwksUpdated) < v.jwksTTL {
-		return jwk.GetPublicKey()
-	}
-
-	res, err := v.iden.LoadJWKS(ctx)
+func NewVerifyImpl(ctx context.Context, iden identifier.JWKSLoader, jwksRateLimit time.Duration) (*VerifyImpl, error) {
+	jwks, err := iden.LoadJWKS(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("load jwks: %w", err)
 	}
 
-	v.jwks = res
-	v.mu.Unlock()
+	return &VerifyImpl{
+		iden: iden,
 
-	jwk, ok = v.jwks[kid]
+		jwks:            jwks,
+		jwksLastUpdated: time.Now(),
+		jwksRateLimit:   jwksRateLimit,
+
+		parser: jwt.NewParser(),
+		mu:     &sync.RWMutex{},
+		sf:     singleflight.Group{},
+	}, nil
+}
+
+func (v *VerifyImpl) updateJWKSKeys(ctx context.Context) error {
+	v.mu.RLock()
+	if time.Since(v.jwksLastUpdated) < v.jwksRateLimit {
+		v.mu.RUnlock()
+		return nil
+	}
+	v.mu.RUnlock()
+	
+	_, err, _ := v.sf.Do(JWKSUpdateKey, func() (interface{}, error) {
+		res, err := v.iden.LoadJWKS(ctx)
+		if err != nil {
+			return false, fmt.Errorf("load jwks: %w", err)
+		}
+
+		v.mu.Lock()
+		v.jwks = res
+		v.jwksLastUpdated = time.Now()
+		v.mu.Unlock()
+
+		return nil, nil
+	})
+
+	if err != nil {
+		return fmt.Errorf("singleflight do: %w", err)
+	}
+
+	return nil
+}
+
+func (v *VerifyImpl) findKeyByKid(ctx context.Context, kid string) (*rsa.PublicKey, error) {
+	err := v.updateJWKSKeys(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("update jwks keys: %w", err)
+	}
+
+	v.mu.RLock()
+	jwk, ok := v.jwks[kid]
+	v.mu.RUnlock()
 	if !ok {
 		return nil, fmt.Errorf("kid=%s not found", kid)
 	}

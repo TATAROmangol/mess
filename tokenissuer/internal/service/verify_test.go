@@ -8,7 +8,6 @@ import (
 	"sync"
 	"testing"
 	"time"
-	"tokenissuer/internal/adapter/identifier"
 	identifiermocks "tokenissuer/internal/adapter/identifier/mocks"
 	"tokenissuer/internal/model"
 	"tokenissuer/pkg/jwks"
@@ -19,7 +18,8 @@ import (
 )
 
 const (
-	KID = "test_kid"
+	KID       = "test_kid"
+	SecondKID = "second_test_kid"
 )
 
 func initTestKeyAndToken(t *testing.T, kid string, claims jwt.MapClaims) (*rsa.PrivateKey, *rsa.PublicKey, string) {
@@ -30,7 +30,6 @@ func initTestKeyAndToken(t *testing.T, kid string, claims jwt.MapClaims) (*rsa.P
 
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	token.Header["kid"] = kid
-
 	signedToken, err := token.SignedString(priv)
 	if err != nil {
 		t.Fatalf("cannot sign token: %v", err)
@@ -39,50 +38,102 @@ func initTestKeyAndToken(t *testing.T, kid string, claims jwt.MapClaims) (*rsa.P
 	return priv, &priv.PublicKey, signedToken
 }
 
+func TestVerifyImpl_updateJWKSKeys(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ctx := context.Background()
+
+	jwksMock := jwksmocks.NewMockJWKS(ctrl)
+
+	jwksLoader := identifiermocks.NewMockJWKSLoader(ctrl)
+
+	jwksLoader.EXPECT().LoadJWKS(gomock.Any()).Return(
+		map[string]jwks.JWKS{"kid1": jwksMock},
+		nil,
+	).Times(2)
+
+	verify, err := NewVerifyImpl(ctx, jwksLoader, 500*time.Millisecond)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	verify.jwksLastUpdated = time.Now().Add(-1 * time.Hour)
+
+	const goroutines = 100
+	var wg sync.WaitGroup
+	wg.Add(goroutines)
+
+	start := make(chan struct{})
+
+	for i := 0; i < goroutines; i++ {
+		go func() {
+			defer wg.Done()
+			<-start
+			if err := verify.updateJWKSKeys(ctx); err != nil {
+				t.Errorf("updateJWKSKeys() error = %v", err)
+			}
+		}()
+	}
+
+	close(start)
+	wg.Wait()
+}
+
 func TestVerifyImpl_findKeyByKid(t *testing.T) {
-	type fields struct {
-		iden        identifier.JWKSLoader
-		jwks        map[string]jwks.JWKS
-		jwksUpdated time.Time
-		jwksTTL     time.Duration
-		parser      *jwt.Parser
-		mu          *sync.RWMutex
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	_, fKey, _ := initTestKeyAndToken(t, KID, jwt.MapClaims{})
+	_, sKey, _ := initTestKeyAndToken(t, SecondKID, jwt.MapClaims{})
+
+	fJwksMock := jwksmocks.NewMockJWKS(ctrl)
+	fJwksMock.EXPECT().GetPublicKey().Return(fKey, nil).AnyTimes()
+
+	sJwksMock := jwksmocks.NewMockJWKS(ctrl)
+	sJwksMock.EXPECT().GetPublicKey().Return(sKey, nil).AnyTimes()
+
+	jwksLoader := identifiermocks.NewMockJWKSLoader(ctrl)
+
+	firstCall := jwksLoader.EXPECT().LoadJWKS(gomock.Any()).Return(
+		map[string]jwks.JWKS{
+			KID: fJwksMock,
+		},
+		nil,
+	)
+	jwksLoader.EXPECT().LoadJWKS(gomock.Any()).Return(
+		map[string]jwks.JWKS{
+			KID:       fJwksMock,
+			SecondKID: sJwksMock,
+		},
+		nil,
+	).After(firstCall).AnyTimes()
+
+	verify, err := NewVerifyImpl(context.Background(), jwksLoader, 1*time.Microsecond)
+	if err != nil {
+		t.Fatal(err)
 	}
-	type args struct {
-		ctx context.Context
-		kid string
+
+	start := make(chan struct{})
+	var wg sync.WaitGroup
+	ctx := context.Background()
+
+	for i := 0; i < 200; i++ {
+		wg.Add(1)
+		go func(i int) {
+			<-start
+			defer wg.Done()
+			kid := KID
+			if i%2 != 0 {
+				kid = SecondKID
+			}
+			_, _ = verify.findKeyByKid(ctx, kid)
+		}(i)
 	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    *rsa.PublicKey
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			v := &VerifyImpl{
-				iden:        tt.fields.iden,
-				jwks:        tt.fields.jwks,
-				jwksUpdated: tt.fields.jwksUpdated,
-				jwksTTL:     tt.fields.jwksTTL,
-				parser:      tt.fields.parser,
-				mu:          tt.fields.mu,
-			}
-			got, err := v.findKeyByKid(tt.args.ctx, tt.args.kid)
-			if (err != nil) != tt.wantErr {
-				t.Fatalf("VerifyImpl.findKeyByKid() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if tt.wantErr {
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("VerifyImpl.findKeyByKid() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+
+	close(start)
+
+	wg.Wait()
 }
 
 func TestVerifyImpl_VerifyToken(t *testing.T) {
@@ -108,7 +159,10 @@ func TestVerifyImpl_VerifyToken(t *testing.T) {
 		nil,
 	).AnyTimes()
 
-	verify := NewVerifyImpl(jwksLoader, time.Hour)
+	verify, err := NewVerifyImpl(context.Background(), jwksLoader, time.Hour)
+	if err != nil {
+		t.Error(err)
+	}
 
 	type args struct {
 		ctx         context.Context

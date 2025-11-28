@@ -11,6 +11,7 @@ const (
 
 var publicKeys = map[ctxKey]bool{
 	RequestIDKey: true,
+	MethodNameKey: true,
 }
 
 func WithRequestID(ctx context.Context, requestID string) context.Context {
