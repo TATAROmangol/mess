@@ -1,0 +1,28 @@
+curl -X POST "http://localhost:8080/api/token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "code": "f769758a-b1ef-477a-bf44-41700b724fd9.01673052-0008-454b-8d79-76401dfff895.29e1c1cd-84e8-4a79-8e79-251529228195",
+    "redirect_url":"http://localhost:8080/front/"
+  }' \
+  --cookie-jar cookies.txt
+
+curl -X GET "http://localhost:8080/api/refresh" \
+  --cookie cookies.txt
+
+http://localhost:7070/realms/TestRealm/protocol/openid-connect/auth?response_type=code&client_id=tokenissuer&redirect_url=http://localhost:8080/front/
+
+
+
+
+
+
+grpcurl -plaintext -d '{
+  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJ0YnB5THE1M2lvOXRWVjR1UTk1TGVENWNmZXlHZjhLUFBCVGJrVEh3TXJVIn0.eyJleHAiOjE3NjQwMDUwNDIsImlhdCI6MTc2NDAwNDc0MiwiYXV0aF90aW1lIjoxNzY0MDAyOTU0LCJqdGkiOiI5OGY3YzVlMi00NDc5LTRkOGYtOTllMS00ZmFhZmRjMjJhN2EiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjcwNzAvcmVhbG1zL1Rlc3RSZWFsbSIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJjZWIyMDA1MS1jMTUwLTQ0MWMtOTExMS0xMzcyYmEwZGYxYTciLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJ0b2tlbmlzc3VlciIsInNlc3Npb25fc3RhdGUiOiIwMTY3MzA1Mi0wMDA4LTQ1NGItOGQ3OS03NjQwMWRmZmY4OTUiLCJhY3IiOiIwIiwiYWxsb3dlZC1vcmlnaW5zIjpbImh0dHA6Ly9sb2NhbGhvc3Q6ODA5MCJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsImRlZmF1bHQtcm9sZXMtdGVzdHJlYWxtIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJlbWFpbCBwcm9maWxlIiwic2lkIjoiMDE2NzMwNTItMDAwOC00NTRiLThkNzktNzY0MDFkZmZmODk1IiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJuYW1lIjoibGxsIGxsbCIsInByZWZlcnJlZF91c2VybmFtZSI6ImxsbCIsImdpdmVuX25hbWUiOiJsbGwiLCJmYW1pbHlfbmFtZSI6ImxsbCIsImVtYWlsIjoibGxsQG1haWwucnUifQ.nLDFg3wXj116Ou_XCvB4WYSan3I-qPq2TdGQf3FrVDS4EiEo04G3L7wBkRP1X1oDALJv4vFuF-jY_U0HlLKZpwjDeFkPuzVQFNBD6XVZX_gpg86J1GxxJC-acU1yfNKA89tcx9sjCPshJzdqUHfU-AYDGvj5Pl5feWjRzNs-KMr4GwaB49ISkNTcoo5eGTV8MzEt2qqIqQVo0aoggjI55VGLLtMompMaGkKXztkRX0Whhp7kBUEDI74O64oMOEolGOqrV2lNg3k8j0nus8e6341l-8xUESZzGhvfhbmaciqg6dOU1fQNJzSABriJyOnws_hnnWAGaWhyeBXKJ4d2oA",
+  "token_type": "Bearer"
+}' localhost:50051 tokenissuer.TokenVerifier.Verify
+
+
+mockery --output internal/mocks/identifier --dir internal/adapter/identifier/ --all
+gotests -all -w internal/service/
+
+mockgen -source=pkg/jwks/jwks.go -destination=pkg/jwks/mocks/mocks.go -package=jwksmocks

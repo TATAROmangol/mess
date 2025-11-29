@@ -1,0 +1,69 @@
+
+services:
+  tokenissuer:
+    build:
+      context: ../tokenissuer/
+      dockerfile: dockerfile
+    container_name: tokenissuer
+    environment:
+      CONFIG_PATH: /root/tokenissuer.yaml
+    volumes:
+    - ./tokenissuer.yaml:/root/tokenissuer.yaml
+    depends_on:
+      - keycloak
+    ports:
+      - "8080:8081"
+      - "50051:50051"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.1.1
+    container_name: keycloak
+    environment:
+      KEYCLOAK_ADMIN: admin       
+      KEYCLOAK_ADMIN_PASSWORD: admin123  
+    command: start-dev
+    ports:
+      - "7070:8080"
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres_container_test
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: test
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5430:5432"
+    volumes:
+      - pgdata_test:/var/lib/postgresql/data/pgdata
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    command: >
+      postgres -c max_connections=1000
+               -c shared_buffers=256MB
+               -c effective_cache_size=768MB
+               -c maintenance_work_mem=64MB
+               -c checkpoint_completion_target=0.7
+               -c wal_buffers=16MB
+               -c default_statistics_target=100
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U test -d test" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+
+volumes:
+  pgdata_test:
+    driver: local
+
