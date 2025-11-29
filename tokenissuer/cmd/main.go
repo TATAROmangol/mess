@@ -17,6 +17,12 @@ import (
 	"tokenissuer/internal/transport/grpc"
 	"tokenissuer/internal/transport/rest"
 	"tokenissuer/pkg/logger"
+
+	"github.com/gin-gonic/gin"
+)
+
+const (
+	ConfigPath = "CONFIG_PATH"
 )
 
 func main() {
@@ -25,7 +31,8 @@ func main() {
 
 	path := *localPath
 	if path == "" {
-		path = os.Getenv("CONFIG_PATH")
+		gin.SetMode(gin.ReleaseMode)
+		path = os.Getenv(ConfigPath)
 		if path == "" {
 			log.Fatal("Error: provide --local or set CONFIG_PATH environment variable")
 			os.Exit(1)
@@ -38,12 +45,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	l := logger.New(os.Stdin, ctxkey.Parse)
+	l := logger.New(os.Stdout, ctxkey.Parse)
 	ctx := context.Background()
 
 	iden := keycloak.NewKeycloak(cfg.Keycloak)
 	token := service.NewTokenImpl(iden)
-	ver, err := service.NewVerifyImpl(ctx, iden, 5*time.Minute)
+	ver, err := service.NewVerifyImpl(ctx, iden, cfg.VerifyService)
 	if err != nil {
 		l.Error(fmt.Errorf("new verify impl: %w", err))
 		os.Exit(1)

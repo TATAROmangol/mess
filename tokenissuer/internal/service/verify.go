@@ -24,6 +24,10 @@ const (
 	JWKSUpdateKey = "jwks_update"
 )
 
+type VerifyConfig struct {
+	JwksRateLimit time.Duration `yaml:"jwks_rate_limit"`
+}
+
 type Verify interface {
 	VerifyToken(ctx context.Context, typeToken, accessToken string) (*model.User, error)
 }
@@ -41,7 +45,7 @@ type VerifyImpl struct {
 	sf singleflight.Group
 }
 
-func NewVerifyImpl(ctx context.Context, iden identifier.JWKSLoader, jwksRateLimit time.Duration) (*VerifyImpl, error) {
+func NewVerifyImpl(ctx context.Context, iden identifier.JWKSLoader, vCfg VerifyConfig) (*VerifyImpl, error) {
 	jwks, err := iden.LoadJWKS(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("load jwks: %w", err)
@@ -52,7 +56,7 @@ func NewVerifyImpl(ctx context.Context, iden identifier.JWKSLoader, jwksRateLimi
 
 		jwks:            jwks,
 		jwksLastUpdated: time.Now(),
-		jwksRateLimit:   jwksRateLimit,
+		jwksRateLimit:   vCfg.JwksRateLimit,
 
 		parser: jwt.NewParser(),
 		mu:     &sync.RWMutex{},
@@ -67,7 +71,7 @@ func (v *VerifyImpl) updateJWKSKeys(ctx context.Context) error {
 		return nil
 	}
 	v.mu.RUnlock()
-	
+
 	_, err, _ := v.sf.Do(JWKSUpdateKey, func() (interface{}, error) {
 		res, err := v.iden.LoadJWKS(ctx)
 		if err != nil {

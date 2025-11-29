@@ -53,7 +53,8 @@ func TestVerifyImpl_updateJWKSKeys(t *testing.T) {
 		nil,
 	).Times(2)
 
-	verify, err := NewVerifyImpl(ctx, jwksLoader, 500*time.Millisecond)
+	cfg := VerifyConfig{JwksRateLimit: 500 * time.Millisecond}
+	verify, err := NewVerifyImpl(ctx, jwksLoader, cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -109,7 +110,8 @@ func TestVerifyImpl_findKeyByKid(t *testing.T) {
 		nil,
 	).After(firstCall).AnyTimes()
 
-	verify, err := NewVerifyImpl(context.Background(), jwksLoader, 1*time.Microsecond)
+	cfg := VerifyConfig{JwksRateLimit: 1 * time.Microsecond}
+	verify, err := NewVerifyImpl(context.Background(), jwksLoader, cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -159,7 +161,8 @@ func TestVerifyImpl_VerifyToken(t *testing.T) {
 		nil,
 	).AnyTimes()
 
-	verify, err := NewVerifyImpl(context.Background(), jwksLoader, time.Hour)
+	cfg := VerifyConfig{JwksRateLimit: time.Hour}
+	verify, err := NewVerifyImpl(context.Background(), jwksLoader, cfg)
 	if err != nil {
 		t.Error(err)
 	}
