@@ -1,0 +1,18 @@
+keycloak:
+  refresh_endpoint: http://keycloak:8080/realms/e2e/protocol/openid-connect/token
+  exchange_code_endpoint: http://keycloak:8080/realms/e2e/protocol/openid-connect/token
+  jwks_endpoint: http://keycloak:8080/realms/e2e/protocol/openid-connect/certs
+  client_id: e2e
+  client_secret: OLJUYlZR1i3RII9LUzCe2Q5W60EWG4F5
+  timeout: 30s
+
+rest:
+  host: 0.0.0.0
+  port: 8083
+
+grpc:
+  host: 0.0.0.0
+  port: 50053
+
+verify_config:
+  jwks_rate_limit: 5m

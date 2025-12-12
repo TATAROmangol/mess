@@ -26,7 +26,7 @@ const (
 )
 
 func main() {
-	localPath := flag.String("local", "", "Path to local config file")
+	localPath := flag.String("config-path", "", "Path to local config file")
 	flag.Parse()
 
 	path := *localPath
@@ -34,7 +34,7 @@ func main() {
 		gin.SetMode(gin.ReleaseMode)
 		path = os.Getenv(ConfigPath)
 		if path == "" {
-			log.Fatal("Error: provide --local or set CONFIG_PATH environment variable")
+			log.Fatal("Error: provide --config-path or set CONFIG_PATH environment variable")
 			os.Exit(1)
 		}
 	}

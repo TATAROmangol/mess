@@ -1,69 +1,64 @@
 
 services:
-  tokenissuer:
-    build:
-      context: ../tokenissuer/
-      dockerfile: dockerfile
-    container_name: tokenissuer
+  keycloak-db:
+    image: postgres:15
+    container_name: keycloak-db
     environment:
-      CONFIG_PATH: /root/tokenissuer.yaml
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak123
     volumes:
-    - ./tokenissuer.yaml:/root/tokenissuer.yaml
-    depends_on:
-      - keycloak
+      - keycloak-data:/var/lib/postgresql/data
     ports:
-      - "8080:8081"
-      - "50051:50051"
+      - "5432:5432"
 
   keycloak:
     image: quay.io/keycloak/keycloak:21.1.1
     container_name: keycloak
     environment:
-      KEYCLOAK_ADMIN: admin       
-      KEYCLOAK_ADMIN_PASSWORD: admin123  
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin123
+      KC_DB: postgres
+      KC_DB_URL_HOST: keycloak-db
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak123
     command: start-dev
+    depends_on:
+      - keycloak-db
     ports:
       - "7070:8080"
     restart: unless-stopped
 
-  postgres:
-    image: postgres:latest
-    container_name: postgres_container_test
+  tokenissuer-e2e:
+    build:
+      context: ../tokenissuer/
+      dockerfile: dockerfile
+    container_name: tokenissuer-e2e
     environment:
-      POSTGRES_USER: test
-      POSTGRES_PASSWORD: test
-      POSTGRES_DB: test
-      PGDATA: /var/lib/postgresql/data/pgdata
-    ports:
-      - "5430:5432"
+      CONFIG_PATH: /root/tokenissuer.yaml
     volumes:
-      - pgdata_test:/var/lib/postgresql/data/pgdata
-    deploy:
-      resources:
-        limits:
-          cpus: '0.50'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
-    command: >
-      postgres -c max_connections=1000
-               -c shared_buffers=256MB
-               -c effective_cache_size=768MB
-               -c maintenance_work_mem=64MB
-               -c checkpoint_completion_target=0.7
-               -c wal_buffers=16MB
-               -c default_statistics_target=100
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U test -d test" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-    restart: unless-stopped
-    tty: true
-    stdin_open: true
+      - ./configs/tokenissuer-e2e.yaml:/root/tokenissuer.yaml
+    depends_on:
+      - keycloak
+    ports:
+      - "8083:8083"
+      - "50052:50053"
+
+  tokenissuer-local:
+    build:
+      context: ../tokenissuer/
+      dockerfile: dockerfile
+    container_name: tokenissuer-local
+    environment:
+      CONFIG_PATH: /root/tokenissuer.yaml
+    volumes:
+      - ./configs/tokenissuer-local.yaml:/root/tokenissuer.yaml
+    depends_on:
+      - keycloak
+    ports:
+      - "8081:8081"
+      - "50051:50051"
 
 volumes:
-  pgdata_test:
-    driver: local
-
+  keycloak-data:

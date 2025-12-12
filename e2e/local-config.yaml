@@ -1,0 +1,10 @@
+# tokenissuer 
+adapter:
+  url: http://localhost:7070/realms/e2e/protocol/openid-connect/auth
+  client_id: e2e
+  login: e2e
+  password: e2e
+  grant_type: password
+  scope: openid
+verify_code_endpoint: http://localhost:8083/api/token
+
