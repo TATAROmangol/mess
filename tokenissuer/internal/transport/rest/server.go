@@ -21,13 +21,14 @@ type Server struct {
 func NewServer(cfg Config, handlers Handler, middleware Middleware) *Server {
 	router := gin.New()
 
+	router.Use(middleware.SetPath())
 	router.Use(middleware.SetMethodName())
 	router.Use(middleware.SetRequestID())
 	router.Use(middleware.Log())
 
 	api := router.Group("/api")
 	api.POST("/token", handlers.GetToken)
-	api.GET("/refresh", handlers.Refresh)
+	api.POST("/refresh", handlers.Refresh)
 
 	httpServer := &http.Server{
 		Addr:    fmt.Sprintf("%v:%v", cfg.Host, cfg.Port),

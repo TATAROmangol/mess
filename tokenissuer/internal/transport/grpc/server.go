@@ -21,7 +21,7 @@ type Server struct {
 func NewServer(cfg Config, interceptor Interceptor, svc Handler) *Server {
 	srv := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			interceptor.SetMethodName,
+			interceptor.SetPath,
 			interceptor.SetRequestID,
 			interceptor.Loggining,
 		),

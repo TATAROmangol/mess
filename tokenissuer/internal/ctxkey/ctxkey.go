@@ -7,11 +7,13 @@ type ctxKey string
 const (
 	RequestIDKey  ctxKey = "request_id"
 	MethodNameKey ctxKey = "method_name"
+	PathKey       ctxKey = "path"
 )
 
 var publicKeys = map[ctxKey]bool{
-	RequestIDKey: true,
+	RequestIDKey:  true,
 	MethodNameKey: true,
+	PathKey:       true,
 }
 
 func WithRequestID(ctx context.Context, requestID string) context.Context {
@@ -20,6 +22,10 @@ func WithRequestID(ctx context.Context, requestID string) context.Context {
 
 func WithMethodName(ctx context.Context, method string) context.Context {
 	return context.WithValue(ctx, MethodNameKey, method)
+}
+
+func WithPath(ctx context.Context, path string) context.Context {
+	return context.WithValue(ctx, PathKey, path)
 }
 
 func Parse(ctx context.Context) map[string]any {

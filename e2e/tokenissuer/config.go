@@ -12,12 +12,18 @@ type AdapterConfig struct {
 	ClientID string `yaml:"client_id"`
 	Login    string `yaml:"login"`
 	Password string `yaml:"password"`
-	Scope    string `yaml:"scope"`
+}
+
+type TokenIssuerConfig struct {
+	VerifyCodeEndpoint string `yaml:"verify_code_endpoint"`
+	RefreshEndpoint    string `yaml:"refresh_endpoint"`
+	VerifyGrpcAddress  string `yaml:"verify_grpc_address"`
+	HTTPPort           int    `yaml:"http_port"`
 }
 
 type Config struct {
-	Adapter            AdapterConfig `yaml:"adapter"`
-	VerifyCodeEndpoint string        `yaml:"verify_code_endpoint"`
+	Adapter AdapterConfig     `yaml:"adapter"`
+	Issuer  TokenIssuerConfig `yaml:"token_issuer"`
 }
 
 func LoadConfig(path string) (*Config, error) {

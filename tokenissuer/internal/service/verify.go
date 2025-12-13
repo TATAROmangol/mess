@@ -19,7 +19,7 @@ const (
 	SubClaim      = "sub"
 	EmailClaim    = "email"
 	UsernameClaim = "preferred_username"
-	BearerType    = "Bearer:"
+	BearerType    = "Bearer"
 
 	JWKSUpdateKey = "jwks_update"
 )

@@ -11,7 +11,7 @@ import (
 
 type Interceptor interface {
 	SetRequestID(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error)
-	SetMethodName(ctx context.Context, eq interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error)
+	SetPath(ctx context.Context, eq interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error)
 	Loggining(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (resp interface{}, err error)
 }
 
@@ -36,13 +36,13 @@ func (i *InterceptorImpl) SetRequestID(
 	return handler(ctx, req)
 }
 
-func (i *InterceptorImpl) SetMethodName(
+func (i *InterceptorImpl) SetPath(
 	ctx context.Context,
 	req interface{},
 	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,
 ) (resp interface{}, err error) {
-	ctx = ctxkey.WithMethodName(ctx, info.FullMethod)
+	ctx = ctxkey.WithPath(ctx, info.FullMethod)
 	return handler(ctx, req)
 }
 

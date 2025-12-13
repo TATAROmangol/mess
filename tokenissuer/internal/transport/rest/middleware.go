@@ -11,6 +11,7 @@ import (
 type Middleware interface {
 	SetMethodName() gin.HandlerFunc
 	SetRequestID() gin.HandlerFunc
+	SetPath() gin.HandlerFunc
 	Log() gin.HandlerFunc
 }
 
@@ -27,6 +28,14 @@ func NewMiddleware(log logger.Logger) *MiddlewareImpl {
 func (m *MiddlewareImpl) SetMethodName() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ctx := ctxkey.WithMethodName(c.Request.Context(), c.Request.Method)
+		c.Request = c.Request.WithContext(ctx)
+		c.Next()
+	}
+}
+
+func (m *MiddlewareImpl) SetPath() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx := ctxkey.WithPath(c.Request.Context(), c.Request.URL.String())
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}
