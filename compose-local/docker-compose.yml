@@ -42,7 +42,6 @@ services:
     depends_on:
       - keycloak
     ports:
-      - "8083:8083"
       - "50052:50053"
 
   tokenissuer-local:
@@ -57,7 +56,6 @@ services:
     depends_on:
       - keycloak
     ports:
-      - "8081:8081"
       - "50051:50051"
 
 volumes:

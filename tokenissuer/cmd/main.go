@@ -5,17 +5,15 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-	"tokenissuer/internal/adapter/identifier/keycloak"
+	"tokenissuer/internal/adapter/jwksloader/keycloak"
 	"tokenissuer/internal/config"
 	"tokenissuer/internal/ctxkey"
 	"tokenissuer/internal/service"
 	"tokenissuer/internal/transport/grpc"
-	"tokenissuer/internal/transport/rest"
 	"tokenissuer/pkg/logger"
 
 	"github.com/gin-gonic/gin"
@@ -49,29 +47,16 @@ func main() {
 	ctx := context.Background()
 
 	iden := keycloak.NewKeycloak(cfg.Keycloak)
-	token := service.NewTokenImpl(iden)
 	ver, err := service.NewVerifyImpl(ctx, iden, cfg.VerifyService)
 	if err != nil {
 		l.Error(fmt.Errorf("new verify impl: %w", err))
 		os.Exit(1)
 	}
-	service := service.NewServiceImpl(token, ver)
-
-	httpHandler := rest.NewHandler(service.Token)
-	httpMiddleware := rest.NewMiddleware(l)
-	httpServer := rest.NewServer(cfg.HTTP, httpHandler, httpMiddleware)
+	service := service.NewServiceImpl(ver)
 
 	grpcHandler := grpc.NewHandlerImpl(service.Verify)
 	grpcInterceptor := grpc.NewInterceptorImpl(l)
 	grpcServer := grpc.NewServer(cfg.GRPC, grpcInterceptor, grpcHandler)
-
-	go func() {
-		if err := httpServer.Run(); err != nil && err != http.ErrServerClosed {
-			l.Error(err)
-			os.Exit(1)
-		}
-	}()
-	l.Info(fmt.Sprintf("http server start - host: %v, port: %v", cfg.HTTP.Host, cfg.HTTP.Port))
 
 	go func() {
 		if err := grpcServer.Run(); err != nil {
@@ -89,7 +74,6 @@ func main() {
 	defer cancel()
 
 	l.Info("Shutting down servers...")
-	httpServer.Stop(ctx)
 	grpcServer.Stop()
 	l.Info("Servers stopped")
 }
