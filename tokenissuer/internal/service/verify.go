@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 	"time"
-	"tokenissuer/internal/adapter/identifier"
+	"tokenissuer/internal/adapter/jwksloader"
 	"tokenissuer/internal/model"
 	"tokenissuer/pkg/jwks"
 
@@ -33,7 +33,7 @@ type Verify interface {
 }
 
 type VerifyImpl struct {
-	iden identifier.JWKSLoader
+	iden jwksloader.Service
 
 	jwks            map[string]jwks.JWKS
 	jwksLastUpdated time.Time
@@ -45,7 +45,7 @@ type VerifyImpl struct {
 	sf singleflight.Group
 }
 
-func NewVerifyImpl(ctx context.Context, iden identifier.JWKSLoader, vCfg VerifyConfig) (*VerifyImpl, error) {
+func NewVerifyImpl(ctx context.Context, iden jwksloader.Service, vCfg VerifyConfig) (*VerifyImpl, error) {
 	jwks, err := iden.LoadJWKS(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("load jwks: %w", err)

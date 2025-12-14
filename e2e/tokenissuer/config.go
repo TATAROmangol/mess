@@ -3,22 +3,23 @@ package tokenissuer
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"go.yaml.in/yaml/v3"
 )
 
 type AdapterConfig struct {
-	AuthURL  string `yaml:"url"`
-	ClientID string `yaml:"client_id"`
-	Login    string `yaml:"login"`
-	Password string `yaml:"password"`
+	AuthURL       string        `yaml:"url"`
+	ClientID      string        `yaml:"client_id"`
+	ClientSecret  string        `yaml:"client_secret"`
+	Login         string        `yaml:"login"`
+	Password      string        `yaml:"password"`
+	SubjectID     string        `yaml:"subject_id"`
+	TokenDuration time.Duration `yaml:"token_duration"`
 }
 
 type TokenIssuerConfig struct {
-	VerifyCodeEndpoint string `yaml:"verify_code_endpoint"`
-	RefreshEndpoint    string `yaml:"refresh_endpoint"`
-	VerifyGrpcAddress  string `yaml:"verify_grpc_address"`
-	HTTPPort           int    `yaml:"http_port"`
+	VerifyGrpcAddress string `yaml:"verify_grpc_address"`
 }
 
 type Config struct {

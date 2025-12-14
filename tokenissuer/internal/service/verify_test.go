@@ -8,7 +8,7 @@ import (
 	"sync"
 	"testing"
 	"time"
-	identifiermocks "tokenissuer/internal/adapter/identifier/mocks"
+	jwksloadermocks "tokenissuer/internal/adapter/jwksloader/mocks"
 	"tokenissuer/internal/model"
 	"tokenissuer/pkg/jwks"
 	jwksmocks "tokenissuer/pkg/jwks/mocks"
@@ -46,7 +46,7 @@ func TestVerifyImpl_updateJWKSKeys(t *testing.T) {
 
 	jwksMock := jwksmocks.NewMockJWKS(ctrl)
 
-	jwksLoader := identifiermocks.NewMockJWKSLoader(ctrl)
+	jwksLoader := jwksloadermocks.NewMockService(ctrl)
 
 	jwksLoader.EXPECT().LoadJWKS(gomock.Any()).Return(
 		map[string]jwks.JWKS{"kid1": jwksMock},
@@ -94,7 +94,7 @@ func TestVerifyImpl_findKeyByKid(t *testing.T) {
 	sJwksMock := jwksmocks.NewMockJWKS(ctrl)
 	sJwksMock.EXPECT().GetPublicKey().Return(sKey, nil).AnyTimes()
 
-	jwksLoader := identifiermocks.NewMockJWKSLoader(ctrl)
+	jwksLoader := jwksloadermocks.NewMockService(ctrl)
 
 	firstCall := jwksLoader.EXPECT().LoadJWKS(gomock.Any()).Return(
 		map[string]jwks.JWKS{
@@ -153,7 +153,7 @@ func TestVerifyImpl_VerifyToken(t *testing.T) {
 	jwksMock := jwksmocks.NewMockJWKS(ctrl)
 	jwksMock.EXPECT().GetPublicKey().Return(key, nil).AnyTimes()
 
-	jwksLoader := identifiermocks.NewMockJWKSLoader(ctrl)
+	jwksLoader := jwksloadermocks.NewMockService(ctrl)
 	jwksLoader.EXPECT().LoadJWKS(gomock.Any()).Return(
 		map[string]jwks.JWKS{
 			KID: jwksMock,

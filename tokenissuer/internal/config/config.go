@@ -3,17 +3,15 @@ package config
 import (
 	"fmt"
 	"os"
-	"tokenissuer/internal/adapter/identifier/keycloak"
+	"tokenissuer/internal/adapter/jwksloader/keycloak"
 	"tokenissuer/internal/service"
 	"tokenissuer/internal/transport/grpc"
-	"tokenissuer/internal/transport/rest"
 
 	"github.com/goccy/go-yaml"
 )
 
 type Config struct {
 	Keycloak      keycloak.Config      `yaml:"keycloak"`
-	HTTP          rest.Config          `yaml:"rest"`
 	GRPC          grpc.Config          `yaml:"grpc"`
 	VerifyService service.VerifyConfig `yaml:"verify_config"`
 }
