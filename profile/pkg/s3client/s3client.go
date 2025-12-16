@@ -1,0 +1,51 @@
+package s3client
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+)
+
+type Client struct {
+	svc *s3.Client
+	cfg Config
+}
+
+type Config struct {
+	Region          string `yaml:"region"`
+	Bucket          string `yaml:"bucket"`
+	Endpoint        string `yaml:"endpoint"`
+	AccessKeyID     string `yaml:"access_key_id"`
+	SecretAccessKey string `yaml:"secret_access_key"`
+}
+
+func New(ctx context.Context, cfg Config) (*Client, error) {
+	awsCfg, err := config.LoadDefaultConfig(
+		ctx,
+		config.WithRegion(cfg.Region),
+		config.WithCredentialsProvider(
+			credentials.NewStaticCredentialsProvider(
+				cfg.AccessKeyID,
+				cfg.SecretAccessKey,
+				"",
+			),
+		),
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("load aws config: %w", err)
+	}
+
+	client := s3.NewFromConfig(awsCfg, func(o *s3.Options) {
+		o.BaseEndpoint = aws.String(cfg.Endpoint)
+	})
+
+	return &Client{
+		svc: client,
+		cfg: cfg,
+	}, nil
+}
