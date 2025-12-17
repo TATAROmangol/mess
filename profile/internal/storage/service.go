@@ -11,13 +11,21 @@ type Service interface {
 }
 
 type IMPL struct {
-	Profile profile.Service
-	Avatar  avatar.Service
+	ProfileSVC profile.Service
+	AvatarSVC  avatar.Service
 }
 
 func New(profileService profile.Service, avatarService avatar.Service) Service {
 	return &IMPL{
-		Profile: profileService,
-		Avatar:  avatarService,
+		ProfileSVC: profileService,
+		AvatarSVC:  avatarService,
 	}
+}
+
+func (s *IMPL) Profile() profile.Service {
+	return s.ProfileSVC
+}
+
+func (s *IMPL) Avatar() avatar.Service {
+	return s.AvatarSVC
 }
