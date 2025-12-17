@@ -24,11 +24,11 @@ func New(cfg Config) (*sql.DB, error) {
 
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sql open: %w", err)
 	}
 
 	if err := db.Ping(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("sql ping: %w", err)
 	}
 
 	return db, nil

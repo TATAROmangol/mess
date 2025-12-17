@@ -10,20 +10,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
-type Client struct {
-	svc *s3.Client
-	cfg Config
-}
-
 type Config struct {
 	Region          string `yaml:"region"`
-	Bucket          string `yaml:"bucket"`
 	Endpoint        string `yaml:"endpoint"`
 	AccessKeyID     string `yaml:"access_key_id"`
 	SecretAccessKey string `yaml:"secret_access_key"`
 }
 
-func New(ctx context.Context, cfg Config) (*Client, error) {
+func New(ctx context.Context, cfg Config) (*s3.Client, error) {
 	awsCfg, err := config.LoadDefaultConfig(
 		ctx,
 		config.WithRegion(cfg.Region),
@@ -44,8 +38,5 @@ func New(ctx context.Context, cfg Config) (*Client, error) {
 		o.BaseEndpoint = aws.String(cfg.Endpoint)
 	})
 
-	return &Client{
-		svc: client,
-		cfg: cfg,
-	}, nil
+	return client, nil
 }
