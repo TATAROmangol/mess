@@ -1,13 +1,14 @@
 package postgres
 
 import (
-	"database/sql"
 	"fmt"
 	"profile/pkg/postgres"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type Storage struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
 func New(cfg postgres.Config) (*Storage, error) {

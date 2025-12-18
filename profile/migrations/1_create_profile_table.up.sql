@@ -3,5 +3,6 @@ CREATE TABLE profile (
     alias TEXT NOT NULL,
     avatar_url TEXT,
     version INT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL
 )

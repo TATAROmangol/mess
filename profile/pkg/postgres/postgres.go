@@ -1,9 +1,9 @@
 package postgres
 
 import (
-	"database/sql"
 	"fmt"
 
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
@@ -16,13 +16,13 @@ type Config struct {
 	SSLMode  string `yaml:"ssl_mode"`
 }
 
-func New(cfg Config) (*sql.DB, error) {
+func New(cfg Config) (*sqlx.DB, error) {
 	psqlInfo := fmt.Sprintf(
 		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.DBName, cfg.SSLMode,
 	)
 
-	db, err := sql.Open("postgres", psqlInfo)
+	db, err := sqlx.Open("postgres", psqlInfo)
 	if err != nil {
 		return nil, fmt.Errorf("sql open: %w", err)
 	}
