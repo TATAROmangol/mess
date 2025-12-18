@@ -1,15 +1,19 @@
 package service
 
 type Service interface {
-	VerifyService() Verify
+	Verify() Verify
 }
 
 type ServiceImpl struct {
-	Verify
+	VerifySVC Verify
 }
 
-func NewServiceImpl(verify Verify) *ServiceImpl {
+func NewServiceImpl(verify Verify) Service {
 	return &ServiceImpl{
-		Verify: verify,
+		VerifySVC: verify,
 	}
+}
+
+func (si *ServiceImpl) Verify() Verify {
+	return si.VerifySVC
 }
