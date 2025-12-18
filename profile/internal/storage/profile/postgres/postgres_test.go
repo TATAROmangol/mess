@@ -4,10 +4,12 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
-	// storage "profile/internal/storage/profile/postgres"
+	"profile/internal/model"
+	storage "profile/internal/storage/profile/postgres"
 	pg "profile/pkg/postgres"
 	"testing"
 
@@ -73,36 +75,145 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-// func TestStorage_GetProfileFromSubjectID(t *testing.T) {
+func cleanupDB(t *testing.T) {
+	t.Helper()
 
-// 	tests := []struct {
-// 		name    string
-// 		cfg     pg.Config
-// 		subjID  string
-// 		want    *model.Profile
-// 		wantErr bool
-// 	}{}
+	db, err := pg.New(CFG)
+	if err != nil {
+		t.Fatalf("connect to db: %v", err)
+	}
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			// s, err := postgres.New(tt.cfg)
-// 			// if err != nil {
-// 			// 	t.Fatalf("could not construct receiver type: %v", err)
-// 			// }
-// 			// got, gotErr := s.GetProfileFromSubjectID(tt.subjID)
-// 			// if gotErr != nil {
-// 			// 	if !tt.wantErr {
-// 			// 		t.Errorf("GetProfileFromSubjectID() failed: %v", gotErr)
-// 			// 	}
-// 			// 	return
-// 			// }
-// 			// if tt.wantErr {
-// 			// 	t.Fatal("GetProfileFromSubjectID() succeeded unexpectedly")
-// 			// }
-// 			// // TODO: update the condition below to compare got with tt.want.
-// 			// if true {
-// 			// 	t.Errorf("GetProfileFromSubjectID() = %v, want %v", got, tt.want)
-// 			// }
-// 		})
-// 	}
-// }
+	_, err = db.Exec(fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY CASCADE", storage.ProfileTable))
+	if err != nil {
+		t.Fatalf("cleanup db: %v", err)
+	}
+}
+
+func TestStorage_AddProfile_GetProfileFromSubjectID(t *testing.T) {
+	s, err := storage.New(CFG)
+	if err != nil {
+		t.Fatalf("could not construct receiver type: %v", err)
+	}
+
+	profileToAdd := &model.Profile{
+		SubjectID: "subject_id",
+		Alias:     "alias",
+		AvatarURL: "url",
+		Version:   1,
+		UpdatedAt: time.Now().UTC(),
+		CreatedAt: time.Now().UTC(),
+	}
+
+	err = s.AddProfile(profileToAdd)
+	if err != nil {
+		t.Fatalf("first add: %v", err)
+	}
+
+	profileFromDB, err := s.GetProfileFromSubjectID(profileToAdd.SubjectID)
+	if err != nil {
+		t.Fatalf("get profile: %v", err)
+	}
+
+	if profileFromDB.SubjectID != profileToAdd.SubjectID ||
+		profileFromDB.Alias != profileToAdd.Alias ||
+		profileFromDB.AvatarURL != profileToAdd.AvatarURL ||
+		profileFromDB.Version != profileToAdd.Version {
+		t.Fatalf("retrieved profile does not match added profile")
+	}
+
+	err = s.AddProfile(profileToAdd)
+	if err == nil {
+		t.Fatalf("expected error on duplicate add, got nil")
+	}
+
+	cleanupDB(t)
+}
+
+func TestStorage_UpdateProfile(t *testing.T) {
+	s, err := storage.New(CFG)
+	if err != nil {
+		t.Fatalf("could not construct receiver type: %v", err)
+	}
+
+	profileToAdd := &model.Profile{
+		SubjectID: "subject_id",
+		Alias:     "alias",
+		AvatarURL: "url",
+		Version:   1,
+		UpdatedAt: time.Now().UTC(),
+		CreatedAt: time.Now().UTC(),
+	}
+
+	err = s.AddProfile(profileToAdd)
+	if err != nil {
+		t.Fatalf("first add: %v", err)
+	}
+
+	tests := []struct {
+		name    string
+		profile *model.Profile
+		wantErr bool
+	}{
+		{
+			name: "successful update",
+			profile: &model.Profile{
+				SubjectID: "subject_id",
+				Alias:     "new_alias",
+				AvatarURL: "new_url",
+				Version:   2,
+				UpdatedAt: time.Now().UTC(),
+				CreatedAt: profileToAdd.CreatedAt,
+			},
+			wantErr: false,
+		},
+		{
+			name: "nont version update",
+			profile: &model.Profile{
+				SubjectID: "subject_id",
+				Alias:     "another_alias",
+				AvatarURL: "another_url",
+				Version:   2,
+				UpdatedAt: time.Now().UTC(),
+				CreatedAt: profileToAdd.CreatedAt,
+			},
+			wantErr: true,
+		},
+		{
+			name: "update non-existing profile",
+			profile: &model.Profile{
+				SubjectID: "non_existing_subject_id",
+				Alias:     "alias",
+				AvatarURL: "url",
+				Version:   1,
+				UpdatedAt: time.Now().UTC(),
+				CreatedAt: time.Now().UTC(),
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotErr := s.UpdateProfile(tt.profile)
+			if gotErr != nil {
+				if !tt.wantErr {
+					t.Errorf("UpdateProfile() failed: %v", gotErr)
+				}
+				return
+			}
+			if tt.wantErr {
+				t.Fatal("UpdateProfile() succeeded unexpectedly")
+			}
+
+			updatedProfile, err := s.GetProfileFromSubjectID(tt.profile.SubjectID)
+			if err != nil {
+				t.Fatalf("GetProfileFromSubjectID() failed: %v", err)
+			}
+
+			if updatedProfile.Alias != tt.profile.Alias ||
+				updatedProfile.AvatarURL != tt.profile.AvatarURL ||
+				updatedProfile.Version != tt.profile.Version {
+				t.Errorf("Profile not updated correctly")
+			}
+		})
+	}
+}
