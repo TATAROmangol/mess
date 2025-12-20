@@ -28,9 +28,23 @@ type Sort struct {
 	Asc   bool   `json:"asc"`
 }
 
+func NewSort(field string, asc bool) *Sort {
+	return &Sort{
+		Field: field,
+		Asc:   asc,
+	}
+}
+
 type Last struct {
 	Field string  `json:"field"`
 	Key   *string `json:"key"`
+}
+
+func NewLast(field string, key *string) *Last {
+	return &Last{
+		Field: field,
+		Key:   key,
+	}
 }
 
 type Pagination struct {
@@ -94,7 +108,9 @@ func MakeQueryWithPagination[T Keyer](ctx context.Context, db *sqlx.DB, b sq.Sel
 	lnRes := len(res)
 	if lnRes > p.Size {
 		newP.Last.Key = res[p.Size-1].Key()
-		lnRes -= 2
+		lnRes -= 1
+	} else {
+		newP.Last.Key = nil
 	}
 
 	return &newP, res[:lnRes], nil

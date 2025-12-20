@@ -11,6 +11,7 @@ import (
 	"profile/internal/model"
 	p "profile/internal/storage/profile"
 	storage "profile/internal/storage/profile/postgres"
+	"profile/pkg/postgres"
 	pq "profile/pkg/postgres"
 	"testing"
 
@@ -248,86 +249,119 @@ func TestStorage_UpdateProfile(t *testing.T) {
 	}
 }
 
-// func TestStorage_GetProfilesFromAlias(t *testing.T) {
-// 	s, err := storage.New(CFG)
-// 	if err != nil {
-// 		t.Fatalf("could not construct receiver type: %v", err)
-// 	}
+func TestStorage_getProfilesWithPagination_Sort(t *testing.T) {
+	s, err := storage.New(CFG)
+	if err != nil {
+		t.Fatalf("could not construct receiver type: %v", err)
+	}
 
-// 	initData(t)
-// 	defer cleanupDB(t)
+	initData(t)
+	defer cleanupDB(t)
 
-// 	tests := []struct {
-// 		name string
-// 		p    *pq.Pagination
-// 		ea   []string
-// 	}{
-// 		{
-// 			name: "asc",
-// 			p: pq.NewPagination(
-// 				10,
-// 				&pq.Sort{
-// 					Field: p.AliasLabel,
-// 					Asc:   true,
-// 				},
-// 				&pq.Last{
-// 					Field: p.SubjectIDLabel,
-// 					Key:   nil,
-// 				},
-// 			),
-// 			ea: []string{"al", "alias", "alias pro"},
-// 		},
-// 		{
-// 			name: "desc",
-// 			p: pq.NewPagination(
-// 				1,
-// 				&pq.Sort{
-// 					Field: p.AliasLabel,
-// 					Asc:   false,
-// 				},
-// 				&pq.Last{
-// 					Field: p.SubjectIDLabel,
-// 					Key:   nil,
-// 				},
-// 			),
-// 			ea: []string{"alias pro", "alias", "al"},
-// 		},
-// 	}
+	tests := []struct {
+		name string
+		asc  bool
+		ea   []string
+	}{
+		{
+			name: "asc",
+			asc:  true,
+			ea:   []string{"al", "alias", "alias pro"},
+		},
+		{
+			name: "desc",
+			asc:  false,
+			ea:   []string{"alias pro", "alias", "al"},
+		},
+	}
 
-// 	for _, tt := range tests {
-// 		t.Run(tt.name, func(t *testing.T) {
-// 			token, res, err := s.GetProfilesFromAlias(
-// 				t.Context(),
-// 				*tt.p.Last.Key,
-// 				"al",
-// 			)
-// 			if err != nil {
-// 				t.Fatalf("get profiles from alias: %v", err)
-// 			}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			token, res, err := s.GetProfilesFromAlias(
+				t.Context(),
+				3,
+				tt.asc,
+				p.AliasLabel,
+				"al",
+			)
+			if err != nil {
+				t.Fatalf("get profiles from alias: %v", err)
+			}
 
-// 			if len(res) != len(tt.ea) {
-// 				t.Fatalf("expected %d profiles, got %d", len(tt.ea), len(res))
-// 			}
+			if len(res) != len(tt.ea) {
+				t.Fatalf("expected %d profiles, got %d", len(tt.ea), len(res))
+			}
 
-// 			for i, prof := range res {
-// 				if prof.Alias != tt.ea[i] {
-// 					t.Errorf(
-// 						"unexpected alias at index %d: want %q, got %q",
-// 						i,
-// 						tt.ea[i],
-// 						prof.Alias,
-// 					)
-// 				}
-// 			}
+			for i, prof := range res {
+				if prof.Alias != tt.ea[i] {
+					t.Errorf(
+						"unexpected alias at index %d: want %q, got %q",
+						i,
+						tt.ea[i],
+						prof.Alias,
+					)
+				}
+			}
 
-// 			pag, err := pq.ParsePaginationToken(token)
-// 			if err != nil {
-// 				t.Fatalf("parse pagination token: %v", err)
-// 			}
+			pag, err := pq.ParsePaginationToken(token)
+			if err != nil {
+				t.Fatalf("parse pagination token: %v", err)
+			}
 
-// 			if pag.Last.Key != nil {
-// 				t.Fatalf("invalid last val")
-// 			}
-// 		})
-// 	}
-// }
+			if pag.Last.Key != nil {
+				t.Fatalf("invalid last val")
+			}
+		})
+	}
+}
+
+func TestStorage_getProfilesWithPagination_Pagination(t *testing.T) {
+	s, err := storage.New(CFG)
+	if err != nil {
+		t.Fatalf("could not construct receiver type: %v", err)
+	}
+
+	initData(t)
+	defer cleanupDB(t)
+
+	alias := "al"
+
+	last := postgres.NewLast(p.SubjectIDLabel, nil)
+	sort := postgres.NewSort(p.AliasLabel, true)
+
+	pag := postgres.NewPagination(
+		2,
+		sort,
+		last,
+	)
+
+	token, res, err := s.GetProfilesFromAliasWithToken(t.Context(), pag.Token(), alias)
+	if len(res) != 2 {
+		t.Fatalf("invalid len res: %v", len(res))
+	}
+	if res[0].SubjectID != InitProfiles[0].SubjectID || res[1].SubjectID != InitProfiles[1].SubjectID {
+		t.Fatalf("invalid res data: %v", res)
+	}
+
+	nP, err := postgres.ParsePaginationToken(token)
+	if err != nil {
+		t.Fatalf("parse pagination token: %v", err)
+	}
+
+	token, res, err = s.GetProfilesFromAliasWithToken(t.Context(), nP.Token(), alias)
+	if len(res) != 1 {
+		t.Fatalf("invalid len res: %v", res)
+	}
+	if res[0].SubjectID != InitProfiles[2].SubjectID {
+		t.Fatalf("invalid res data: %v", res)
+	}
+
+	pag, err = pq.ParsePaginationToken(token)
+	if err != nil {
+		t.Fatalf("parse pagination token: %v", err)
+	}
+
+	if pag.Last.Key != nil {
+		t.Fatalf("invalid last val")
+	}
+}

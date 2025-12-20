@@ -107,7 +107,6 @@ func (s *Storage) UpdateProfile(ctx context.Context, prof *model.Profile) error 
 }
 
 func (s *Storage) GetProfilesFromAlias(ctx context.Context, size int, asc bool, sortLabel p.Label, alias string) (string, []*model.Profile, error) {
-	filters := sq.Like{p.AliasLabel: fmt.Sprintf("%v%%", alias)}
 	last := postgres.NewLast(p.SubjectIDLabel, nil)
 	sort := postgres.NewSort(sortLabel, asc)
 
@@ -115,10 +114,9 @@ func (s *Storage) GetProfilesFromAlias(ctx context.Context, size int, asc bool, 
 		size,
 		sort,
 		last,
-		filters,
 	)
 
-	return s.getProfilesWithPagination(ctx, pag)
+	return s.getProfilesWithPagination(ctx, pag, alias)
 }
 
 func (s *Storage) GetProfilesFromAliasWithToken(ctx context.Context, token, alias string) (string, []*model.Profile, error) {
@@ -127,13 +125,14 @@ func (s *Storage) GetProfilesFromAliasWithToken(ctx context.Context, token, alia
 		return "", nil, fmt.Errorf("parse pagination token: %w", err)
 	}
 
-	return s.getProfilesWithPagination(ctx, pag)
+	return s.getProfilesWithPagination(ctx, pag, alias)
 }
 
-func (s *Storage) getProfilesWithPagination(ctx context.Context, pag *postgres.Pagination) (string, []*model.Profile, error) {
+func (s *Storage) getProfilesWithPagination(ctx context.Context, pag *postgres.Pagination, alias string) (string, []*model.Profile, error) {
 	builder := sq.
 		Select(AllLabelsSelect).
-		From(p.ProfileTable)
+		From(p.ProfileTable).
+		Where(sq.Like{p.AliasLabel: alias + "%"})
 
 	newP, entities, err := postgres.MakeQueryWithPagination[*ProfileEntity](
 		ctx,
