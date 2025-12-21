@@ -54,7 +54,7 @@ func main() {
 	}
 	service := service.NewServiceImpl(ver)
 
-	grpcHandler := grpc.NewHandlerImpl(service.Verify)
+	grpcHandler := grpc.NewHandlerImpl(service.Verify())
 	grpcInterceptor := grpc.NewInterceptorImpl(l)
 	grpcServer := grpc.NewServer(cfg.GRPC, grpcInterceptor, grpcHandler)
 
