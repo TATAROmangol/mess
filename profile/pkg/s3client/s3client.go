@@ -15,6 +15,7 @@ type Config struct {
 	Endpoint        string `yaml:"endpoint"`
 	AccessKeyID     string `yaml:"access_key_id"`
 	SecretAccessKey string `yaml:"secret_access_key"`
+	PathStyle       bool   `yaml:"path_style"`
 }
 
 func New(ctx context.Context, cfg Config) (*s3.Client, error) {
@@ -36,6 +37,7 @@ func New(ctx context.Context, cfg Config) (*s3.Client, error) {
 
 	client := s3.NewFromConfig(awsCfg, func(o *s3.Options) {
 		o.BaseEndpoint = aws.String(cfg.Endpoint)
+		o.UsePathStyle = cfg.PathStyle
 	})
 
 	return client, nil
