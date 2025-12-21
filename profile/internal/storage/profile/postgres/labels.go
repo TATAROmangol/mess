@@ -1,5 +1,0 @@
-package postgres
-
-const (
-	AllLabelsSelect = "*"
-)

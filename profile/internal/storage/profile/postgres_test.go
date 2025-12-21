@@ -1,4 +1,4 @@
-package postgres_test
+package profile_test
 
 import (
 	"context"
@@ -10,7 +10,6 @@ import (
 
 	"profile/internal/model"
 	p "profile/internal/storage/profile"
-	storage "profile/internal/storage/profile/postgres"
 	"profile/pkg/postgres"
 	pq "profile/pkg/postgres"
 	"testing"
@@ -21,7 +20,7 @@ import (
 var CFG pq.Config
 
 const (
-	MigrationsPath = "file://../../../../migrations/"
+	MigrationsPath = "file://../../../migrations/"
 )
 
 var InitProfiles = []*model.Profile{
@@ -121,7 +120,7 @@ func cleanupDB(t *testing.T) {
 func initData(t *testing.T) {
 	t.Helper()
 
-	s, err := storage.New(CFG)
+	s, err := p.New(CFG)
 	if err != nil {
 		t.Fatalf("could not construct receiver type: %v", err)
 	}
@@ -135,7 +134,7 @@ func initData(t *testing.T) {
 }
 
 func TestStorage_AddProfile_GetProfileFromSubjectID(t *testing.T) {
-	s, err := storage.New(CFG)
+	s, err := p.New(CFG)
 	if err != nil {
 		t.Fatalf("could not construct receiver type: %v", err)
 	}
@@ -175,7 +174,7 @@ func TestStorage_AddProfile_GetProfileFromSubjectID(t *testing.T) {
 }
 
 func TestStorage_UpdateProfile(t *testing.T) {
-	s, err := storage.New(CFG)
+	s, err := p.New(CFG)
 	if err != nil {
 		t.Fatalf("could not construct receiver type: %v", err)
 	}
@@ -250,7 +249,7 @@ func TestStorage_UpdateProfile(t *testing.T) {
 }
 
 func TestStorage_getProfilesWithPagination_Sort(t *testing.T) {
-	s, err := storage.New(CFG)
+	s, err := p.New(CFG)
 	if err != nil {
 		t.Fatalf("could not construct receiver type: %v", err)
 	}
@@ -316,7 +315,7 @@ func TestStorage_getProfilesWithPagination_Sort(t *testing.T) {
 }
 
 func TestStorage_getProfilesWithPagination_Pagination(t *testing.T) {
-	s, err := storage.New(CFG)
+	s, err := p.New(CFG)
 	if err != nil {
 		t.Fatalf("could not construct receiver type: %v", err)
 	}
@@ -363,5 +362,36 @@ func TestStorage_getProfilesWithPagination_Pagination(t *testing.T) {
 
 	if pag.Last.Key != nil {
 		t.Fatalf("invalid last val")
+	}
+}
+
+func TestStorage_DeleteProfileFromSubjectID(t *testing.T) {
+	s, err := p.New(CFG)
+	if err != nil {
+		t.Fatalf("could not construct receiver type: %v", err)
+	}
+
+	initData(t)
+	defer cleanupDB(t)
+
+	delID := InitProfiles[0].SubjectID
+
+	err = s.DeleteProfileFromSubjectID(t.Context(), delID)
+	if err != nil {
+		t.Fatalf("delete profile from subjectID: %v", err)
+	}
+
+	_, res, err := s.GetProfilesFromAlias(t.Context(), 100, true, p.AliasLabel, "")
+	if err != nil{
+		t.Fatalf("get profiles from alias: %v", err)
+	}
+
+	if len(res) == len(InitProfiles){
+		t.Fatalf("not delete profile")
+	}
+
+	err = s.DeleteProfileFromSubjectID(t.Context(), "not")
+	if err == nil {
+		t.Fatalf("not err not found")
 	}
 }

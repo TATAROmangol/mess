@@ -11,4 +11,5 @@ type Service interface {
 	UpdateProfile(ctx context.Context, profile *model.Profile) error
 	GetProfilesFromAliasWithInfo(ctx context.Context, size int, asc bool, sortLabel Label, alias string)
 	GetProfilesFromAliasWithToken(ctx context.Context, token, alias string) (string, []*model.Profile, error)
+	DeleteProfileFromSubjectID(ctx context.Context, subjID string) error
 }

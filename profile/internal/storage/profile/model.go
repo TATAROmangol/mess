@@ -1,4 +1,4 @@
-package postgres
+package profile
 
 import (
 	"profile/internal/model"
