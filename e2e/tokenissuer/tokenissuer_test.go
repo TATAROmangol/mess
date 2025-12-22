@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	pb "github.com/TATAROmangol/mess/api/pb/tokenissuer"
+	pb "github.com/TATAROmangol/mess/shared/api/pb/tokenissuer"
 
 	"github.com/go-resty/resty/v2"
 	"google.golang.org/grpc"

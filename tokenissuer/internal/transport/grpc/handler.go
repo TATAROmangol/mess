@@ -6,7 +6,7 @@ import (
 
 	"github.com/TATAROmangol/mess/tokenissuer/internal/service"
 
-	pb "github.com/TATAROmangol/mess/api/pb/tokenissuer"
+	pb "github.com/TATAROmangol/mess/shared/api/pb/tokenissuer"
 
 	"google.golang.org/grpc"
 )
