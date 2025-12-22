@@ -7,8 +7,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres123
     volumes:
-      - ./pg/postgres-data:/var/lib/postgresql/data
-      - ./pg/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres-data:/var/lib/postgresql/data
     ports:
       - "5430:5432"
 
@@ -22,7 +21,7 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     volumes:
-      - ./minio/data:/data
+      - minio-data:/data
     command: server /data --console-address ":9001"
     restart: unless-stopped
 
@@ -71,3 +70,7 @@ services:
       - keycloak
     ports:
       - "50051:50051"
+
+volumes:
+  postgres-data:
+  minio-data:
