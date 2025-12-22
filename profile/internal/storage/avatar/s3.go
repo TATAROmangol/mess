@@ -4,7 +4,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"profile/pkg/s3client"
+
+	"github.com/TATAROmangol/mess/profile/pkg/s3client"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )

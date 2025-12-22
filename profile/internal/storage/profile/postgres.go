@@ -3,8 +3,9 @@ package profile
 import (
 	"context"
 	"fmt"
-	"profile/internal/model"
-	"profile/pkg/postgres"
+
+	"github.com/TATAROmangol/mess/profile/internal/model"
+	"github.com/TATAROmangol/mess/profile/pkg/postgres"
 
 	sq "github.com/Masterminds/squirrel"
 

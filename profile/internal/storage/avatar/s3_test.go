@@ -7,9 +7,10 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"profile/internal/storage/avatar"
-	"profile/pkg/s3client"
 	"testing"
+
+	"github.com/TATAROmangol/mess/profile/internal/storage/avatar"
+	"github.com/TATAROmangol/mess/profile/pkg/s3client"
 )
 
 var CFG avatar.Config

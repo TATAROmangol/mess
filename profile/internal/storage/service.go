@@ -1,8 +1,8 @@
 package storage
 
 import (
-	"profile/internal/storage/avatar"
-	"profile/internal/storage/profile"
+	"github.com/TATAROmangol/mess/profile/internal/storage/avatar"
+	"github.com/TATAROmangol/mess/profile/internal/storage/profile"
 )
 
 type Service interface {

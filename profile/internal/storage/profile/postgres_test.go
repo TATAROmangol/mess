@@ -8,11 +8,13 @@ import (
 
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
-	"profile/internal/model"
-	p "profile/internal/storage/profile"
-	"profile/pkg/postgres"
-	pq "profile/pkg/postgres"
 	"testing"
+
+	pq "github.com/TATAROmangol/mess/profile/pkg/postgres"
+
+	"github.com/TATAROmangol/mess/profile/internal/model"
+	p "github.com/TATAROmangol/mess/profile/internal/storage/profile"
+	"github.com/TATAROmangol/mess/profile/pkg/postgres"
 
 	pgcontainer "github.com/testcontainers/testcontainers-go/modules/postgres"
 )
@@ -382,11 +384,11 @@ func TestStorage_DeleteProfileFromSubjectID(t *testing.T) {
 	}
 
 	_, res, err := s.GetProfilesFromAlias(t.Context(), 100, true, p.AliasLabel, "")
-	if err != nil{
+	if err != nil {
 		t.Fatalf("get profiles from alias: %v", err)
 	}
 
-	if len(res) == len(InitProfiles){
+	if len(res) == len(InitProfiles) {
 		t.Fatalf("not delete profile")
 	}
 

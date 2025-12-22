@@ -1,4 +1,4 @@
-module profile
+module github.com/TATAROmangol/mess/profile
 
 go 1.25.5
 

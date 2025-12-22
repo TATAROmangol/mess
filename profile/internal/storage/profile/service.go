@@ -2,7 +2,8 @@ package profile
 
 import (
 	"context"
-	"profile/internal/model"
+
+	"github.com/TATAROmangol/mess/profile/internal/model"
 )
 
 type Service interface {

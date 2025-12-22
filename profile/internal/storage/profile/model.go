@@ -1,8 +1,9 @@
 package profile
 
 import (
-	"profile/internal/model"
 	"time"
+
+	"github.com/TATAROmangol/mess/profile/internal/model"
 )
 
 type ProfileEntity struct {

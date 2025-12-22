@@ -2,10 +2,11 @@ package tokenissuer
 
 import (
 	"context"
-	pb "e2e/tokenissuer/pb/tokenissuerpb"
 	"encoding/json"
 	"testing"
 	"time"
+
+	pb "github.com/TATAROmangol/mess/api/pb/tokenissuer"
 
 	"github.com/go-resty/resty/v2"
 	"google.golang.org/grpc"
@@ -27,11 +28,11 @@ func getTokens(ctx context.Context, t *testing.T) *Token {
 		SetContext(ctx).
 		SetHeader("Content-Type", "application/x-www-form-urlencoded").
 		SetFormData(map[string]string{
-			"grant_type": "password",
-			"client_id":  CFG.Adapter.ClientID,
+			"grant_type":    "password",
+			"client_id":     CFG.Adapter.ClientID,
 			"client_secret": CFG.Adapter.ClientSecret,
-			"username":   CFG.Adapter.Login,
-			"password":   CFG.Adapter.Password,
+			"username":      CFG.Adapter.Login,
+			"password":      CFG.Adapter.Password,
 		}).
 		Post(CFG.Adapter.AuthURL)
 
