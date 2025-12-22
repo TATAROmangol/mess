@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/TATAROmangol/mess/profile/internal/model"
-	"github.com/TATAROmangol/mess/profile/pkg/postgres"
+	"github.com/TATAROmangol/mess/shared/postgres"
 
 	sq "github.com/Masterminds/squirrel"
 

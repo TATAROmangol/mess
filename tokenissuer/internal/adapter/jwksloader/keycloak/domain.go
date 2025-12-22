@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/TATAROmangol/mess/tokenissuer/pkg/jwks"
+	"github.com/TATAROmangol/mess/shared/jwks"
 )
 
 func (k *Keycloak) LoadJWKS(ctx context.Context) (map[string]jwks.JWKS, error) {

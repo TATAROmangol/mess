@@ -3,8 +3,8 @@ package grpc
 import (
 	"context"
 
+	"github.com/TATAROmangol/mess/shared/logger"
 	"github.com/TATAROmangol/mess/tokenissuer/internal/ctxkey"
-	"github.com/TATAROmangol/mess/tokenissuer/pkg/logger"
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc"

@@ -8,7 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	jwks "github.com/TATAROmangol/mess/tokenissuer/pkg/jwks"
+	jwks "github.com/TATAROmangol/mess/shared/jwks"
 
 	gomock "github.com/golang/mock/gomock"
 )

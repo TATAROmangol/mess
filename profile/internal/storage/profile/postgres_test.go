@@ -10,11 +10,11 @@ import (
 
 	"testing"
 
-	pq "github.com/TATAROmangol/mess/profile/pkg/postgres"
+	pq "github.com/TATAROmangol/mess/shared/postgres"
 
 	"github.com/TATAROmangol/mess/profile/internal/model"
 	p "github.com/TATAROmangol/mess/profile/internal/storage/profile"
-	"github.com/TATAROmangol/mess/profile/pkg/postgres"
+	"github.com/TATAROmangol/mess/shared/postgres"
 
 	pgcontainer "github.com/testcontainers/testcontainers-go/modules/postgres"
 )

@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/TATAROmangol/mess/tokenissuer/pkg/jwks"
+	"github.com/TATAROmangol/mess/shared/jwks"
 
 	"github.com/TATAROmangol/mess/tokenissuer/internal/adapter/jwksloader"
 	"github.com/TATAROmangol/mess/tokenissuer/internal/model"

@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TATAROmangol/mess/shared/jwks"
 	"github.com/TATAROmangol/mess/tokenissuer/internal/model"
-	"github.com/TATAROmangol/mess/tokenissuer/pkg/jwks"
 
+	jwksmocks "github.com/TATAROmangol/mess/shared/jwks/mocks"
 	jwksloadermocks "github.com/TATAROmangol/mess/tokenissuer/internal/adapter/jwksloader/mocks"
-	jwksmocks "github.com/TATAROmangol/mess/tokenissuer/pkg/jwks/mocks"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/golang/mock/gomock"

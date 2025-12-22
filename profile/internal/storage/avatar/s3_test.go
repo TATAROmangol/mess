@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/TATAROmangol/mess/profile/internal/storage/avatar"
-	"github.com/TATAROmangol/mess/profile/pkg/s3client"
+	"github.com/TATAROmangol/mess/shared/s3client"
 )
 
 var CFG avatar.Config
