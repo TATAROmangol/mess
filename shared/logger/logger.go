@@ -9,7 +9,8 @@ import (
 type Logger interface {
 	Info(msg string)
 	Error(err error)
-	With(key string, val any) *Logger
+	With(key string, val any) Logger
+	PushFromContext(ctx context.Context) context.Context
 }
 
 type loggerCtxKey struct{}
@@ -35,7 +36,7 @@ func (l *Log) Error(err error) {
 	l.lg.Error(err.Error())
 }
 
-func (l *Log) With(key string, val any) *Log {
+func (l *Log) With(key string, val any) Logger {
 	return &Log{
 		lg: l.lg.With(slog.Any(key, val)),
 	}
