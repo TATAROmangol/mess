@@ -3,14 +3,13 @@ package logger
 import (
 	"context"
 	"fmt"
-	"io"
 	"log/slog"
 )
 
 type Logger interface {
 	Info(msg string)
 	Error(err error)
-	With(key string, val any) Logger
+	With(key string, val any) *Logger
 }
 
 type loggerCtxKey struct{}
@@ -21,7 +20,7 @@ type Log struct {
 	lg *slog.Logger
 }
 
-func New(w io.Writer, handler slog.Handler) *Log {
+func New(handler slog.Handler) *Log {
 	lg := slog.New(handler)
 	return &Log{
 		lg: lg,
