@@ -1,8 +1,8 @@
-CREATE DATABASE keycloak IF NOT EXISTS;
-CREATE DATABASE tokenissuer IF NOT EXISTS;
+CREATE DATABASE keycloak;
+CREATE DATABASE tokenissuer;
 
-CREATE USER keycloak WITH PASSWORD 'keycloak' IF NOT EXISTS;
-CREATE USER tokenissuer WITH PASSWORD 'tokenissuer' IF NOT EXISTS;
+CREATE USER keycloak WITH PASSWORD 'keycloak';
+CREATE USER tokenissuer WITH PASSWORD 'tokenissuer';
 
 GRANT ALL PRIVILEGES ON DATABASE keycloak TO keycloak;
 GRANT ALL PRIVILEGES ON DATABASE tokenissuer TO tokenissuer;

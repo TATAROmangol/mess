@@ -1,10 +1,10 @@
 adapter:
   url: http://localhost:7070/realms/e2e/protocol/openid-connect/token
   client_id: e2e
-  client_secret: EMJsTtPvgmEcdQkGC0KQEGFzkADRDzDU
+  client_secret: fTQwn8jHrT5uJDbn20b1g1jntRFiPU5w
   login: e2e
   password: e2e
-  subject_id: 91b54210-6d48-4343-b572-66469501c063
+  subject_id: 758c5b0e-aacf-49e9-a150-d43f896f0b45
   token_duration: 5m
 token_issuer:
   verify_grpc_address: localhost:50052
