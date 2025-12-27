@@ -19,3 +19,4 @@ type Service interface {
 	DeleteCurrentProfile(ctx context.Context) error
 	DeleteProfileFromSubjectID(ctx context.Context, subjID string) error
 }
+
