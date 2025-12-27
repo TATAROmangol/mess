@@ -3,7 +3,7 @@ module github.com/TATAROmangol/mess/tokenissuer
 go 1.25.5
 
 require (
-	github.com/TATAROmangol/mess/shared v0.0.0-20251223160658-7998672b0a8a
+	github.com/TATAROmangol/mess/shared v0.0.0-20251227151803-3f999fa3ffcf
 	github.com/gin-gonic/gin v1.11.0
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/goccy/go-yaml v1.18.0
