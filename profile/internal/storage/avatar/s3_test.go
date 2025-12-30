@@ -3,7 +3,6 @@ package avatar_test
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -15,150 +14,115 @@ import (
 
 var CFG avatar.Config
 
-var TestID = "subject_id"
+var TestIDs = []string{"test-file-1", "test-file-1"}
+
+var Content = []byte("test file content")
 
 func TestMain(m *testing.M) {
 	cfgClient := s3client.Config{
 		Region:          "us-east-1",
 		Endpoint:        "http://localhost:9000",
 		AccessKeyID:     "avatar-backend",
-		SecretAccessKey: "avatarback",
+		SecretAccessKey: "avatar-backend",
 		PathStyle:       true,
 	}
 
 	CFG = avatar.Config{
-		Client:       cfgClient,
-		PublicBucket: "avatar",
+		Client: cfgClient,
+		Bucket: "avatar-test1",
 	}
 
 	os.Exit(m.Run())
 }
 
 func cleanUP(t *testing.T, s *avatar.Storage) {
-	err := s.Delete(t.Context(), TestID)
-	if err != nil {
-		t.Fatalf("cleanup failed: %v", err)
-	}
-}
-
-func checkData(t *testing.T, data []byte, contentType string) {
-	url := fmt.Sprintf("%v/%v/%v", CFG.Client.Endpoint, CFG.PublicBucket, TestID)
-	resp, err := http.Get(url)
-	if err != nil {
-		t.Fatalf("http.Get(): %v", err)
-	}
-	defer resp.Body.Close()
-
-	// 1. HTTP status
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("status = %d, want %d", resp.StatusCode, http.StatusOK)
-	}
-
-	// 2. Content-Type
-	gotCT := resp.Header.Get("Content-Type")
-	if gotCT != contentType {
-		t.Errorf("Content-Type = %q, want %q", gotCT, contentType)
-	}
-
-	// 3. Body
-	gotBody, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatalf("read body: %v", err)
-	}
-
-	if !bytes.Equal(gotBody, data) {
-		t.Fatalf("body mismatch: got %q, want %q", gotBody, data)
-	}
-}
-
-func TestStorage_Upload(t *testing.T) {
 	ctx := context.Background()
-
-	s, err := avatar.New(ctx, CFG)
+	notDeleted, err := s.DeleteObjects(ctx, TestIDs)
 	if err != nil {
-		t.Fatalf("avatar.New(): %v", err)
-	}
-	defer cleanUP(t, s)
-
-	data := []byte("fake image bytes")
-	contentType := "image/png"
-
-	url, err := s.Upload(ctx, TestID, data, contentType)
-	if err != nil {
-		t.Fatalf("Upload(): %v", err)
+		t.Logf("cleanup failed: %v", err)
 	}
 
-	wantURL := fmt.Sprintf("%v/%v/%v", CFG.Client.Endpoint, CFG.PublicBucket, TestID)
-
-	if url != wantURL {
-		t.Fatalf("Upload() url = %s, want %s", url, wantURL)
-	}
-
-	checkData(t, data, contentType)
-}
-
-func TestStorage_Delete(t *testing.T) {
-	ctx := context.Background()
-
-	s, err := avatar.New(ctx, CFG)
-	if err != nil {
-		t.Fatalf("avatar.New(): %v", err)
-	}
-
-	data := []byte("to be deleted")
-	contentType := "text/plain"
-
-	_, err = s.Upload(ctx, TestID, data, contentType)
-	if err != nil {
-		t.Fatalf("Upload(): %v", err)
-	}
-
-	err = s.Delete(ctx, TestID)
-	if err != nil {
-		t.Fatalf("Delete(): %v", err)
-	}
-
-	url := fmt.Sprintf("%v/%v/%v", CFG.Client.Endpoint, CFG.PublicBucket, TestID)
-	resp, err := http.Get(url)
-	if err != nil {
-		t.Fatalf("http.Get(): %v", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode == http.StatusOK {
-		t.Fatalf("expected file to be deleted, but got status 200")
+	if len(notDeleted) != 0 {
+		t.Fatalf("expected all objects to be deleted, not deleted: %v", notDeleted)
 	}
 }
 
-func TestStorage_Update(t *testing.T) {
-	ctx := context.Background()
+func uploadDefaultFiles(ctx context.Context, t *testing.T, st *avatar.Storage) {
+	for _, key := range TestIDs {
+		uploadURL, err := st.GetUploadURL(ctx, key)
+		if err != nil {
+			t.Fatalf("GetUploadURL failed: %v", err)
+		}
+		if uploadURL == "" {
+			t.Fatal("expected upload URL to be not empty")
+		}
 
-	s, err := avatar.New(ctx, CFG)
+		file := bytes.NewReader(Content)
+
+		req, err := http.NewRequest(http.MethodPut, uploadURL, file)
+		if err != nil {
+			t.Fatalf("failed to create upload request: %v", err)
+		}
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			t.Fatalf("upload failed: %v", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+			t.Fatalf("unexpected upload status: %d", resp.StatusCode)
+		}
+	}
+}
+
+func TestGetUploadURLAndGetAvatarURL(t *testing.T) {
+	st, err := avatar.New(t.Context(), CFG)
 	if err != nil {
-		t.Fatalf("avatar.New(): %v", err)
+		t.Fatalf("failed to create storage: %v", err)
 	}
-	defer cleanUP(t, s)
+	defer cleanUP(t, st)
 
-	dataV1 := []byte("old data")
-	ctV1 := "text/plain"
+	uploadDefaultFiles(t.Context(), t, st)
 
-	dataV2 := []byte("new data")
-	ctV2 := "application/octet-stream"
+	for _, key := range TestIDs {
+		url, err := st.GetAvatarURL(t.Context(), key)
+		if err != nil {
+			t.Fatalf("failed to get avatar URL: %v", err)
+		}
+		if url == "" {
+			t.Fatal("expected avatar URL to be not empty")
+		}
 
-	_, err = s.Upload(ctx, TestID, dataV1, ctV1)
+		resp, err := http.Get(url)
+		if err != nil {
+			t.Fatalf("failed to GET avatar: %v", err)
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			t.Fatalf("avatar not accessible, status: %d", resp.StatusCode)
+		}
+
+		body, _ := io.ReadAll(resp.Body)
+		if !bytes.Equal(body, Content) {
+			t.Fatal("avatar content does not match uploaded content")
+		}
+	}
+}
+
+func TestDeleteObjects(t *testing.T) {
+	st, err := avatar.New(t.Context(), CFG)
 	if err != nil {
-		t.Fatalf("Upload(): %v", err)
+		t.Fatalf("failed to create storage: %v", err)
 	}
 
-	url, err := s.Update(ctx, TestID, dataV2, ctV2)
+	uploadDefaultFiles(t.Context(), t, st)
+	notDeleted, err := st.DeleteObjects(t.Context(), TestIDs)
 	if err != nil {
-		t.Fatalf("Update(): %v", err)
+		t.Fatalf("DeleteObjects failed: %v", err)
 	}
 
-	wantURL := fmt.Sprintf("%v/%v/%v", CFG.Client.Endpoint, CFG.PublicBucket, TestID)
-	if url != wantURL {
-		t.Fatalf("Update() url = %s, want %s", url, wantURL)
+	if len(notDeleted) != 0 {
+		t.Fatalf("expected all objects to be deleted, not deleted: %v", notDeleted)
 	}
-
-	checkData(t, dataV2, ctV2)
 }

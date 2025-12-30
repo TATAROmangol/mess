@@ -19,7 +19,8 @@ const (
 )
 
 type Storage struct {
-	db *sqlx.DB
+	db   *sqlx.DB
+	exec sqlx.ExtContext
 }
 
 func New(cfg postgres.Config) (*Storage, error) {
@@ -28,11 +29,42 @@ func New(cfg postgres.Config) (*Storage, error) {
 		return nil, fmt.Errorf("connect to postgres: %w", err)
 	}
 
-	return &Storage{db: db}, nil
+	return &Storage{
+		db:   db,
+		exec: db,
+	}, nil
 }
 
 func (s *Storage) Close() error {
 	return s.db.Close()
+}
+
+func (s *Storage) WithTransaction(ctx context.Context) (ServiceTransaction, error) {
+	tx, err := s.db.BeginTxx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("begin txx: %v", err)
+	}
+
+	return &Storage{
+		db:   s.db,
+		exec: tx,
+	}, nil
+}
+
+func (s *Storage) Commit() error {
+	tx, ok := s.exec.(*sqlx.Tx)
+	if !ok {
+		return fmt.Errorf("commit called without transaction")
+	}
+	return tx.Commit()
+}
+
+func (s *Storage) Rollback() error {
+	tx, ok := s.exec.(*sqlx.Tx)
+	if !ok {
+		return fmt.Errorf("rollback called without transaction")
+	}
+	return tx.Rollback()
 }
 
 func (s *Storage) AddProfile(ctx context.Context, subjID string, alias string, avatarURL string) (*model.Profile, error) {
@@ -54,7 +86,7 @@ func (s *Storage) AddProfile(ctx context.Context, subjID string, alias string, a
 	}
 
 	var entity ProfileEntity
-	err = s.db.GetContext(ctx, &entity, query, args...)
+	err = sqlx.GetContext(ctx, s.exec, &entity, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("db get: %w", err)
 	}
@@ -74,7 +106,7 @@ func (s *Storage) GetProfileFromSubjectID(ctx context.Context, subjID string) (*
 	}
 
 	var entity ProfileEntity
-	err = s.db.GetContext(ctx, &entity, query, args...)
+	err = sqlx.GetContext(ctx, s.exec, &entity, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("db get: %w", err)
 	}
@@ -99,7 +131,7 @@ func (s *Storage) UpdateProfile(ctx context.Context, prof *model.Profile) (*mode
 	}
 
 	var entity ProfileEntity
-	err = s.db.GetContext(ctx, &entity, query, args...)
+	err = sqlx.GetContext(ctx, s.exec, &entity, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("db get: %w", err)
 	}
@@ -159,7 +191,7 @@ func (s *Storage) DeleteProfileFromSubjectID(ctx context.Context, subjID string)
 		return fmt.Errorf("build delete profile sql: %w", err)
 	}
 
-	res, err := s.db.ExecContext(ctx, query, args...)
+	res, err := s.exec.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("delete profile: %w", err)
 	}
