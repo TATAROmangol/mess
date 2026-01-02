@@ -60,6 +60,7 @@ func (s *S3) GetAvatarURL(ctx context.Context, key string) (string, error) {
 			Bucket: &s.cfg.Bucket,
 			Key:    &key,
 		},
+		s3.WithPresignExpires(s.cfg.PresignDuration),
 	)
 
 	if err != nil {
@@ -81,6 +82,7 @@ func (s *S3) DeleteObjects(ctx context.Context, keys []string) error {
 			Delete: &types.Delete{
 				Objects: objects,
 			},
+			s3.WithPresignExpires(s.cfg.PresignDuration),
 		},
 	)
 
