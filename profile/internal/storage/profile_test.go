@@ -1,4 +1,4 @@
-package profile_test
+package storage_test
 
 import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -8,7 +8,7 @@ import (
 	pq "github.com/TATAROmangol/mess/shared/postgres"
 
 	"github.com/TATAROmangol/mess/profile/internal/model"
-	p "github.com/TATAROmangol/mess/profile/internal/storage/profile"
+	p "github.com/TATAROmangol/mess/profile/internal/storage"
 	"github.com/TATAROmangol/mess/shared/postgres"
 )
 
@@ -25,7 +25,7 @@ func TestStorage_AddProfile(t *testing.T) {
 		Version:   1,
 	}
 
-	profileFromDB, err := s.AddProfile(t.Context(), profileToAdd.SubjectID, profileToAdd.Alias, profileToAdd.AvatarKey)
+	profileFromDB, err := s.AddProfile(t.Context(), profileToAdd.SubjectID, profileToAdd.Alias)
 	if err != nil {
 		t.Fatalf("first add: %v", err)
 	}
@@ -38,7 +38,7 @@ func TestStorage_AddProfile(t *testing.T) {
 		t.Fatalf("retrieved profile does not match added profile")
 	}
 
-	_, err = s.AddProfile(t.Context(), profileToAdd.SubjectID, profileToAdd.Alias, profileToAdd.AvatarKey)
+	_, err = s.AddProfile(t.Context(), profileToAdd.SubjectID, profileToAdd.Alias)
 	if err == nil {
 		t.Fatalf("expected error on duplicate add, got nil")
 	}

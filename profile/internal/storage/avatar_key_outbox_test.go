@@ -1,11 +1,11 @@
-package profile_test
+package storage_test
 
 import (
 	"sort"
 	"testing"
 
 	"github.com/TATAROmangol/mess/profile/internal/model"
-	p "github.com/TATAROmangol/mess/profile/internal/storage/profile"
+	p "github.com/TATAROmangol/mess/profile/internal/storage"
 )
 
 func TestStorage_GetKeys(t *testing.T) {

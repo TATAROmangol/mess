@@ -1,4 +1,4 @@
-package profile
+package storage
 
 import (
 	"context"
@@ -17,18 +17,17 @@ var (
 	deletedATIsNullProfileFilter = fmt.Sprintf("%v %v", ProfileDeletedAtLabel, IsNullLabel)
 )
 
-func (s *Storage) AddProfile(ctx context.Context, subjID string, alias string, avatarKey *string) (*model.Profile, error) {
+func (s *Storage) AddProfile(ctx context.Context, subjID string, alias string) (*model.Profile, error) {
 	query, args, err := sq.
 		Insert(ProfileTable).
 		Columns(
 			ProfileSubjectIDLabel,
 			ProfileAliasLabel,
-			ProfileAvatarKeyLabel,
 			ProfileVersionLabel,
 			ProfileUpdatedAtLabel,
 			ProfileCreatedAtLabel,
-			ProfileDeletedAtLabel).
-		Values(subjID, alias, avatarKey, 1, time.Now().UTC(), time.Now().UTC(), nil).
+		).
+		Values(subjID, alias, 1, time.Now().UTC(), time.Now().UTC(), nil).
 		Suffix(ReturningSuffix).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()

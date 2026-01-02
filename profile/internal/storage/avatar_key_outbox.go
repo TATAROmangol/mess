@@ -1,4 +1,4 @@
-package profile
+package storage
 
 import (
 	"context"

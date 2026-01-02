@@ -1,4 +1,4 @@
-package profile_test
+package storage_test
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/TATAROmangol/mess/profile/internal/model"
-	p "github.com/TATAROmangol/mess/profile/internal/storage/profile"
+	p "github.com/TATAROmangol/mess/profile/internal/storage"
 	pq "github.com/TATAROmangol/mess/shared/postgres"
 	"github.com/TATAROmangol/mess/shared/utils"
 	pgcontainer "github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -136,7 +136,7 @@ func initData(t *testing.T) {
 	}
 
 	for _, prof := range InitProfiles {
-		_, err = s.AddProfile(t.Context(), prof.SubjectID, prof.Alias, prof.AvatarKey)
+		_, err = s.AddProfile(t.Context(), prof.SubjectID, prof.Alias)
 		if err != nil {
 			t.Fatalf("init add: %v", err)
 		}
