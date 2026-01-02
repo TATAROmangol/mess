@@ -35,7 +35,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func cleanUP(t *testing.T, s *avatar.Storage) {
+func cleanUP(t *testing.T, s avatar.Service) {
 	ctx := context.Background()
 	err := s.DeleteObjects(ctx, TestIDs)
 	if err != nil {
@@ -43,7 +43,7 @@ func cleanUP(t *testing.T, s *avatar.Storage) {
 	}
 }
 
-func uploadDefaultFiles(ctx context.Context, t *testing.T, st *avatar.Storage) {
+func uploadDefaultFiles(ctx context.Context, t *testing.T, st avatar.Service) {
 	for _, key := range TestIDs {
 		uploadURL, err := st.GetUploadURL(ctx, key)
 		if err != nil {
