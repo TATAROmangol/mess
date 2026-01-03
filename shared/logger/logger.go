@@ -9,13 +9,14 @@ type Logger interface {
 	Info(msg string)
 	Error(err error)
 	Errors(msg string, errors []error)
+	With(key string, val any) Logger
 }
 
 type log struct {
 	lg *slog.Logger
 }
 
-func New(handler slog.Handler) *log {
+func New(handler slog.Handler) Logger {
 	lg := slog.New(handler)
 	return &log{
 		lg: lg,
@@ -42,4 +43,10 @@ func (l *log) Errors(msg string, errors []error) {
 	}
 
 	l.lg.Error(msg, slog.String("errors", b.String()))
+}
+
+func (l *log) With(key string, val any) Logger {
+	return &log{
+		lg: l.lg.With(key, val),
+	}
 }
