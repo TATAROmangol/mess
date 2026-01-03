@@ -27,7 +27,7 @@ func (s *Storage) AddProfile(ctx context.Context, subjID string, alias string) (
 			ProfileUpdatedAtLabel,
 			ProfileCreatedAtLabel,
 		).
-		Values(subjID, alias, 1, time.Now().UTC(), time.Now().UTC(), nil).
+		Values(subjID, alias, 1, time.Now().UTC(), time.Now().UTC()).
 		Suffix(ReturningSuffix).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()

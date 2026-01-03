@@ -31,13 +31,13 @@ type AvatarKeyOutbox interface {
 
 type Service interface {
 	WithTransaction(ctx context.Context) (ServiceTransaction, error)
-	Profile
-	AvatarKeyOutbox
+	Profile() Profile
+	AvatarKeyOutbox() AvatarKeyOutbox
 }
 
 type ServiceTransaction interface {
-	Profile
-	AvatarKeyOutbox
+	Profile() Profile
+	AvatarKeyOutbox() AvatarKeyOutbox
 	Commit() error
 	Rollback() error
 }
@@ -47,7 +47,7 @@ type Storage struct {
 	exec sqlx.ExtContext
 }
 
-func New(cfg postgres.Config) (*Storage, error) {
+func New(cfg postgres.Config) (Service, error) {
 	db, err := postgres.New(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("connect to postgres: %w", err)
@@ -73,6 +73,20 @@ func (s *Storage) WithTransaction(ctx context.Context) (ServiceTransaction, erro
 		db:   s.db,
 		exec: tx,
 	}, nil
+}
+
+func (s *Storage) Profile() Profile {
+	return &Storage{
+		db:   s.db,
+		exec: s.exec,
+	}
+}
+
+func (s *Storage) AvatarKeyOutbox() AvatarKeyOutbox {
+	return &Storage{
+		db:   s.db,
+		exec: s.exec,
+	}
 }
 
 func (s *Storage) Commit() error {

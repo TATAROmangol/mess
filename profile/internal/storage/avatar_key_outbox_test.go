@@ -16,7 +16,7 @@ func TestStorage_GetKeys(t *testing.T) {
 	initData(t)
 	defer cleanupDB(t)
 
-	keys, err := s.GetKeys(t.Context(), len(InitAvatarKeys))
+	keys, err := s.AvatarKeyOutbox().GetKeys(t.Context(), len(InitAvatarKeys))
 	if err != nil {
 		t.Fatalf("get keys: %v", err)
 	}
@@ -45,7 +45,7 @@ func TestStorage_AddKey(t *testing.T) {
 	}
 	defer cleanupDB(t)
 
-	key, err := s.AddKey(t.Context(), InitAvatarKeys[0].SubjectID, InitAvatarKeys[0].Key)
+	key, err := s.AvatarKeyOutbox().AddKey(t.Context(), InitAvatarKeys[0].SubjectID, InitAvatarKeys[0].Key)
 	if err != nil {
 		t.Fatalf("add keyL %v", err)
 	}
@@ -67,12 +67,12 @@ func TestStorage_DeleteKeys(t *testing.T) {
 
 	keys := model.GetAvatarKeys(InitAvatarKeys)
 
-	err = s.DeleteKeys(t.Context(), keys)
+	err = s.AvatarKeyOutbox().DeleteKeys(t.Context(), keys)
 	if err != nil {
 		t.Fatalf("delete keys: %v", err)
 	}
 
-	data, err := s.GetKeys(t.Context(), len(InitAvatarKeys))
+	data, err := s.AvatarKeyOutbox().GetKeys(t.Context(), len(InitAvatarKeys))
 	if err != nil {
 		t.Fatalf("get keys: %v", err)
 	}

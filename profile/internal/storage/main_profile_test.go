@@ -2,6 +2,8 @@ package storage_test
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"os"
 	"testing"
@@ -10,13 +12,14 @@ import (
 	p "github.com/TATAROmangol/mess/profile/internal/storage"
 	pq "github.com/TATAROmangol/mess/shared/postgres"
 	"github.com/TATAROmangol/mess/shared/utils"
+	"github.com/stretchr/testify/assert"
 	pgcontainer "github.com/testcontainers/testcontainers-go/modules/postgres"
 )
 
 var CFG pq.Config
 
 const (
-	MigrationsPath = "file://../../../migrations/"
+	MigrationsPath = "file://../../migrations/"
 )
 
 var InitProfiles = []*model.Profile{
@@ -136,16 +139,104 @@ func initData(t *testing.T) {
 	}
 
 	for _, prof := range InitProfiles {
-		_, err = s.AddProfile(t.Context(), prof.SubjectID, prof.Alias)
+		_, err = s.Profile().AddProfile(t.Context(), prof.SubjectID, prof.Alias)
 		if err != nil {
 			t.Fatalf("init add: %v", err)
 		}
 	}
 
 	for _, k := range InitAvatarKeys {
-		_, err = s.AddKey(t.Context(), k.SubjectID, k.Key)
+		_, err = s.AvatarKeyOutbox().AddKey(t.Context(), k.SubjectID, k.Key)
 		if err != nil {
 			t.Fatalf("init add: %v", err)
 		}
+	}
+}
+
+func TestStorage_Transaction_Commit(t *testing.T) {
+	st, err := p.New(CFG)
+	if err != nil {
+		t.Fatalf("could not construct receiver type: %v", err)
+	}
+
+	defer cleanupDB(t)
+
+	s, err := st.WithTransaction(t.Context())
+	if err != nil {
+		t.Fatalf("failed create storage with trasaction: %v", err)
+	}
+
+	prof, err := s.Profile().AddProfile(t.Context(), InitProfiles[0].SubjectID, InitProfiles[0].Alias)
+	if err != nil {
+		t.Fatalf("delete avatar key: %v", err)
+	}
+
+	key, err := s.AvatarKeyOutbox().AddKey(t.Context(), InitProfiles[0].SubjectID, "test")
+	if err != nil {
+		t.Fatalf("add key: %v", err)
+	}
+
+	err = s.Commit()
+	if err != nil {
+		t.Fatalf("commit: %v", err)
+	}
+	// imitation defer
+	err = s.Rollback()
+	if err == nil {
+		t.Fatalf("rollback not have error from commit")
+	}
+
+	prof2, err := st.Profile().GetProfileFromSubjectID(t.Context(), InitProfiles[0].SubjectID)
+	if err != nil {
+		t.Fatalf("get profile from subject id: %v", err)
+	}
+	assert.Equal(t, prof, prof2)
+
+	keys, err := st.AvatarKeyOutbox().GetKeys(t.Context(), 100)
+	if err != nil {
+		t.Fatalf("get keys: %v", err)
+	}
+	if len(keys) != 1 {
+		t.Fatalf("mot correct len, wait 1, have: %v", len(keys))
+	}
+	assert.Equal(t, key, keys[0])
+}
+
+func TestStorage_Transaction_Rollback(t *testing.T) {
+	st, err := p.New(CFG)
+	if err != nil {
+		t.Fatalf("could not construct receiver type: %v", err)
+	}
+
+	defer cleanupDB(t)
+
+	s, err := st.WithTransaction(t.Context())
+	if err != nil {
+		t.Fatalf("failed create storage with trasaction: %v", err)
+	}
+
+	_, err = s.Profile().AddProfile(t.Context(), InitProfiles[0].SubjectID, InitProfiles[0].Alias)
+	if err != nil {
+		t.Fatalf("delete avatar key: %v", err)
+	}
+
+	_, err = s.AvatarKeyOutbox().AddKey(t.Context(), InitProfiles[0].SubjectID, "test")
+	if err != nil {
+		t.Fatalf("add key: %v", err)
+	}
+
+	err = s.Rollback()
+	if err != nil {
+		t.Fatalf("rollback: %v", err)
+	}
+
+	_, err = st.Profile().GetProfileFromSubjectID(t.Context(), InitProfiles[0].SubjectID)
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		t.Fatalf("get profile from subject id: %v", err)
+	}
+
+	_, err = st.AvatarKeyOutbox().GetKeys(t.Context(), 100)
+	if err != nil && errors.Is(err, sql.ErrNoRows) {
+		t.Fatalf("get keys: %v", err)
 	}
 }

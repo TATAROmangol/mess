@@ -25,7 +25,7 @@ func TestStorage_AddProfile(t *testing.T) {
 		Version:   1,
 	}
 
-	profileFromDB, err := s.AddProfile(t.Context(), profileToAdd.SubjectID, profileToAdd.Alias)
+	profileFromDB, err := s.Profile().AddProfile(t.Context(), profileToAdd.SubjectID, profileToAdd.Alias)
 	if err != nil {
 		t.Fatalf("first add: %v", err)
 	}
@@ -38,7 +38,7 @@ func TestStorage_AddProfile(t *testing.T) {
 		t.Fatalf("retrieved profile does not match added profile")
 	}
 
-	_, err = s.AddProfile(t.Context(), profileToAdd.SubjectID, profileToAdd.Alias)
+	_, err = s.Profile().AddProfile(t.Context(), profileToAdd.SubjectID, profileToAdd.Alias)
 	if err == nil {
 		t.Fatalf("expected error on duplicate add, got nil")
 	}
@@ -94,7 +94,7 @@ func TestStorage_UpdateProfileMetadata(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			updatedProfile, gotErr := s.UpdateProfileMetadata(t.Context(), tt.profile.SubjectID, tt.profile.PrevVersion, tt.profile.Alias)
+			updatedProfile, gotErr := s.Profile().UpdateProfileMetadata(t.Context(), tt.profile.SubjectID, tt.profile.PrevVersion, tt.profile.Alias)
 			if gotErr != nil {
 				if !tt.wantErr {
 					t.Errorf("UpdateProfile() failed: %v", gotErr)
@@ -123,12 +123,12 @@ func TestStorage_UpdateAvatarKey(t *testing.T) {
 	defer cleanupDB(t)
 
 	key := "test-key"
-	err = s.UpdateAvatarKey(t.Context(), InitProfiles[0].SubjectID, key)
+	err = s.Profile().UpdateAvatarKey(t.Context(), InitProfiles[0].SubjectID, key)
 	if err != nil {
 		t.Fatalf("update avatar key: %v", err)
 	}
 
-	prof, err := s.GetProfileFromSubjectID(t.Context(), InitProfiles[0].SubjectID)
+	prof, err := s.Profile().GetProfileFromSubjectID(t.Context(), InitProfiles[0].SubjectID)
 	if err != nil {
 		t.Fatalf("get profile from subject id: %v", err)
 	}
@@ -166,7 +166,7 @@ func TestStorage_GetProfilesWithPagination_Sort(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			token, res, err := s.GetProfilesFromAlias(
+			token, res, err := s.Profile().GetProfilesFromAlias(
 				t.Context(),
 				3,
 				tt.asc,
@@ -224,7 +224,7 @@ func TestStorage_GetProfilesWithPagination_Pagination(t *testing.T) {
 		last,
 	)
 
-	token, res, err := s.GetProfilesFromAliasWithToken(t.Context(), pag.Token(), alias)
+	token, res, err := s.Profile().GetProfilesFromAliasWithToken(t.Context(), pag.Token(), alias)
 	if len(res) != 2 {
 		t.Fatalf("invalid len res: %v", len(res))
 	}
@@ -237,7 +237,7 @@ func TestStorage_GetProfilesWithPagination_Pagination(t *testing.T) {
 		t.Fatalf("parse pagination token: %v", err)
 	}
 
-	token, res, err = s.GetProfilesFromAliasWithToken(t.Context(), nP.Token(), alias)
+	token, res, err = s.Profile().GetProfilesFromAliasWithToken(t.Context(), nP.Token(), alias)
 	if len(res) != 1 {
 		t.Fatalf("invalid len res: %v", res)
 	}
@@ -266,12 +266,12 @@ func TestStorage_DeleteProfile(t *testing.T) {
 
 	delID := InitProfiles[0].SubjectID
 
-	err = s.DeleteProfile(t.Context(), delID)
+	err = s.Profile().DeleteProfile(t.Context(), delID)
 	if err != nil {
 		t.Fatalf("delete profile from subjectID: %v", err)
 	}
 
-	_, res, err := s.GetProfilesFromAlias(t.Context(), 100, true, p.ProfileAliasLabel, "")
+	_, res, err := s.Profile().GetProfilesFromAlias(t.Context(), 100, true, p.ProfileAliasLabel, "")
 	if err != nil {
 		t.Fatalf("get profiles from alias: %v", err)
 	}
@@ -280,7 +280,7 @@ func TestStorage_DeleteProfile(t *testing.T) {
 		t.Fatalf("not delete profile")
 	}
 
-	err = s.DeleteProfile(t.Context(), "not")
+	err = s.Profile().DeleteProfile(t.Context(), "not")
 	if err != nil {
 		t.Fatalf("delete profile subject id: %v", err)
 	}
@@ -295,12 +295,12 @@ func TestStorage_DeleteAvatarKey(t *testing.T) {
 	initData(t)
 	defer cleanupDB(t)
 
-	err = s.DeleteAvatarKey(t.Context(), InitProfiles[0].SubjectID)
+	err = s.Profile().DeleteAvatarKey(t.Context(), InitProfiles[0].SubjectID)
 	if err != nil {
 		t.Fatalf("delete avatar key: %v", err)
 	}
 
-	prof, err := s.GetProfileFromSubjectID(t.Context(), InitProfiles[0].SubjectID)
+	prof, err := s.Profile().GetProfileFromSubjectID(t.Context(), InitProfiles[0].SubjectID)
 	if err != nil {
 		t.Fatalf("get profile from subject id: %v", err)
 	}
