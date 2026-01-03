@@ -231,12 +231,12 @@ func TestStorage_Transaction_Rollback(t *testing.T) {
 	}
 
 	_, err = st.Profile().GetProfileFromSubjectID(t.Context(), InitProfiles[0].SubjectID)
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		t.Fatalf("get profile from subject id: %v", err)
 	}
 
 	_, err = st.AvatarKeyOutbox().GetKeys(t.Context(), 100)
-	if err != nil && errors.Is(err, sql.ErrNoRows) {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		t.Fatalf("get keys: %v", err)
 	}
 }
