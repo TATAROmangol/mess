@@ -35,11 +35,12 @@ type Service interface {
 
 const (
 	DefaultPageSize = 100
-
-	Asc       = true
-	SortLabel = storage.ProfileAliasLabel
+	Asc             = true
+	SortLabel       = storage.ProfileAliasLabel
 
 	AvatarOutboxKeyLogLabel = "avatar_outbox_key"
+
+	DeleteAvatarsLimit = 100
 )
 
 type Domain struct {

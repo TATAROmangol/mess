@@ -9,10 +9,6 @@ import (
 	"github.com/TATAROmangol/mess/shared/utils"
 )
 
-const (
-	DeleteAvatarsLimit = 100
-)
-
 func (d *Domain) UpdateAvatar(ctx context.Context, subjID string, avatarKey string) error {
 	lg, err := ctxkey.ExtractLogger(ctx)
 	if err != nil {
