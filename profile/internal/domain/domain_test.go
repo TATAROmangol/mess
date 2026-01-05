@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/TATAROmangol/mess/profile/internal/domain"
+	"github.com/TATAROmangol/mess/profile/internal/loglables"
 	"github.com/TATAROmangol/mess/profile/internal/model"
 	"github.com/TATAROmangol/mess/shared/utils"
 	"github.com/golang/mock/gomock"
@@ -277,11 +278,12 @@ func TestDomain_DeleteAvatar_SuccessWithLogger(t *testing.T) {
 	env.profile.EXPECT().DeleteAvatarKey(env.ctx, subjID).Return(profile, nil)
 	env.outbox.EXPECT().AddKey(env.ctx, subjID, *profile.AvatarKey).Return(outboxKey, nil)
 
+	env.lg.EXPECT().With(loglables.AvatarOutbox, *outboxKey).Return(env.lg)
 	env.lg.EXPECT().Info(gomock.Any())
 
 	prof, url, err := env.domain.DeleteAvatar(env.ctx)
 	require.NoError(t, err)
-	if url != ""{
+	if url != "" {
 		t.Fatalf("not empty url: %v", url)
 	}
 	require.Equal(t, prof, profile)
