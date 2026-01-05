@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/TATAROmangol/mess/profile/internal/ctxkey"
+	"github.com/TATAROmangol/mess/profile/internal/loglables"
 	"github.com/TATAROmangol/mess/profile/internal/model"
 )
 
@@ -165,11 +166,13 @@ func (d *Domain) DeleteAvatar(ctx context.Context) (*model.Profile, string, erro
 	if err != nil {
 		return nil, "", fmt.Errorf("avatar key outbox add key: %v", err)
 	}
-	lg.Info(fmt.Sprintf("add outbox: %v", *outbox))
+	lg.With(loglables.AvatarOutbox, *outbox)
 
 	if err := s.Commit(); err != nil {
 		return nil, "", fmt.Errorf("commit: %v", err)
 	}
+
+	lg.Info("add outbox")
 
 	return prof, "", nil
 }
