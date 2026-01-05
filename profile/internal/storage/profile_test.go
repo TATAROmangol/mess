@@ -1,6 +1,9 @@
 package storage_test
 
 import (
+	"database/sql"
+	"errors"
+
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
 	"testing"
@@ -123,14 +126,9 @@ func TestStorage_UpdateAvatarKey(t *testing.T) {
 	defer cleanupDB(t)
 
 	key := "test-key"
-	err = s.Profile().UpdateAvatarKey(t.Context(), InitProfiles[0].SubjectID, key)
+	prof, err := s.Profile().UpdateAvatarKey(t.Context(), InitProfiles[0].SubjectID, key)
 	if err != nil {
 		t.Fatalf("update avatar key: %v", err)
-	}
-
-	prof, err := s.Profile().GetProfileFromSubjectID(t.Context(), InitProfiles[0].SubjectID)
-	if err != nil {
-		t.Fatalf("get profile from subject id: %v", err)
 	}
 
 	if *prof.AvatarKey != key {
@@ -266,9 +264,12 @@ func TestStorage_DeleteProfile(t *testing.T) {
 
 	delID := InitProfiles[0].SubjectID
 
-	err = s.Profile().DeleteProfile(t.Context(), delID)
+	prof, err := s.Profile().DeleteProfile(t.Context(), delID)
 	if err != nil {
-		t.Fatalf("delete profile from subjectID: %v", err)
+		t.Fatalf("delete profile subject id: %v", err)
+	}
+	if prof == nil {
+		t.Fatalf("expected nil profile on delete non-existing, got %+v", prof)
 	}
 
 	_, res, err := s.Profile().GetProfilesFromAlias(t.Context(), 100, true, p.ProfileAliasLabel, "")
@@ -280,8 +281,8 @@ func TestStorage_DeleteProfile(t *testing.T) {
 		t.Fatalf("not delete profile")
 	}
 
-	err = s.Profile().DeleteProfile(t.Context(), "not")
-	if err != nil {
+	_, err = s.Profile().DeleteProfile(t.Context(), "not")
+	if err != nil && !errors.Is(err, sql.ErrNoRows){
 		t.Fatalf("delete profile subject id: %v", err)
 	}
 }
@@ -295,14 +296,9 @@ func TestStorage_DeleteAvatarKey(t *testing.T) {
 	initData(t)
 	defer cleanupDB(t)
 
-	err = s.Profile().DeleteAvatarKey(t.Context(), InitProfiles[0].SubjectID)
+	prof, err := s.Profile().DeleteAvatarKey(t.Context(), InitProfiles[0].SubjectID)
 	if err != nil {
 		t.Fatalf("delete avatar key: %v", err)
-	}
-
-	prof, err := s.Profile().GetProfileFromSubjectID(t.Context(), InitProfiles[0].SubjectID)
-	if err != nil {
-		t.Fatalf("get profile from subject id: %v", err)
 	}
 
 	if prof.AvatarKey != nil {

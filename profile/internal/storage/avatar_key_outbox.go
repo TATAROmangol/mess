@@ -68,26 +68,29 @@ func (s *Storage) AddKey(ctx context.Context, subjectID string, key string) (*mo
 	return entity.ToModel(), nil
 }
 
-func (s *Storage) DeleteKeys(ctx context.Context, keys []string) error {
+func (s *Storage) DeleteKeys(ctx context.Context, keys []string) ([]*model.AvatarKeyOutbox, error) {
 	if len(keys) == 0 {
-		return nil
+		return []*model.AvatarKeyOutbox{}, nil
 	}
 
 	query, args, err := sq.
 		Update(AvatarKeyOutboxTable).
 		Set(AvatarKeyOutboxDeletedAtLabel, time.Now().UTC()).
 		Where(sq.Eq{AvatarKeyOutboxKeyLabel: keys}).
+		Where(sq.Expr(deletedATIsNullAvatarKeyFilter)).
+		Suffix(ReturningSuffix).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
-		return fmt.Errorf("build update avatar keys sql: %w", err)
+		return nil, fmt.Errorf("build update avatar keys sql: %w", err)
 	}
 
-	_, err = s.exec.ExecContext(ctx, query, args...)
+	var entities []*AvatarKeyOutboxEntity
+	err = sqlx.SelectContext(ctx, s.exec, &entities, query, args...)
 	if err != nil {
-		return fmt.Errorf("db exec: %w", err)
+		return nil, fmt.Errorf("db get: %w", err)
 	}
 
-	return nil
+	return AvatarKeyOutboxEntitiesToModels(entities), nil
 }

@@ -17,16 +17,16 @@ type Profile interface {
 	GetProfilesFromAliasWithToken(ctx context.Context, token, alias string) (string, []*model.Profile, error)
 
 	UpdateProfileMetadata(ctx context.Context, subjectID string, prevVersion int, alias string) (*model.Profile, error)
-	UpdateAvatarKey(ctx context.Context, subjID string, avatarKey string) error
+	UpdateAvatarKey(ctx context.Context, subjID string, avatarKey string) (*model.Profile, error)
 
-	DeleteProfile(ctx context.Context, subjID string) error
-	DeleteAvatarKey(ctx context.Context, subjID string) error
+	DeleteProfile(ctx context.Context, subjID string) (*model.Profile, error)
+	DeleteAvatarKey(ctx context.Context, subjID string) (*model.Profile, error)
 }
 
 type AvatarKeyOutbox interface {
 	GetKeys(ctx context.Context, limit int) ([]*model.AvatarKeyOutbox, error)
 	AddKey(ctx context.Context, subjectID string, key string) (*model.AvatarKeyOutbox, error)
-	DeleteKeys(ctx context.Context, keys []string) error
+	DeleteKeys(ctx context.Context, keys []string) ([]*model.AvatarKeyOutbox, error)
 }
 
 type Service interface {

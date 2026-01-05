@@ -17,6 +17,16 @@ var (
 	deletedATIsNullProfileFilter = fmt.Sprintf("%v %v", ProfileDeletedAtLabel, IsNullLabel)
 )
 
+func (s *Storage) doAndReturnProfile(ctx context.Context, query string, args []interface{}) (*model.Profile, error) {
+	var entity ProfileEntity
+	err := sqlx.GetContext(ctx, s.exec, &entity, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("db get: %w", err)
+	}
+
+	return entity.ToModel(), nil
+}
+
 func (s *Storage) AddProfile(ctx context.Context, subjID string, alias string) (*model.Profile, error) {
 	query, args, err := sq.
 		Insert(ProfileTable).
@@ -35,13 +45,7 @@ func (s *Storage) AddProfile(ctx context.Context, subjID string, alias string) (
 		return nil, fmt.Errorf("build sql: %w", err)
 	}
 
-	var entity ProfileEntity
-	err = sqlx.GetContext(ctx, s.exec, &entity, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("db get: %w", err)
-	}
-
-	return entity.ToModel(), nil
+	return s.doAndReturnProfile(ctx, query, args)
 }
 
 func (s *Storage) GetProfileFromSubjectID(ctx context.Context, subjID string) (*model.Profile, error) {
@@ -56,13 +60,7 @@ func (s *Storage) GetProfileFromSubjectID(ctx context.Context, subjID string) (*
 		return nil, fmt.Errorf("build sql: %w", err)
 	}
 
-	var entity ProfileEntity
-	err = sqlx.GetContext(ctx, s.exec, &entity, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("db get: %w", err)
-	}
-
-	return entity.ToModel(), nil
+	return s.doAndReturnProfile(ctx, query, args)
 }
 
 func (s *Storage) GetProfilesFromAlias(ctx context.Context, size int, asc bool, sortLabel Label, alias string) (string, []*model.Profile, error) {
@@ -123,75 +121,59 @@ func (s *Storage) UpdateProfileMetadata(ctx context.Context, subjectID string, p
 		return nil, fmt.Errorf("build sql: %w", err)
 	}
 
-	var entity ProfileEntity
-	err = sqlx.GetContext(ctx, s.exec, &entity, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("db get: %w", err)
-	}
-
-	return entity.ToModel(), nil
+	return s.doAndReturnProfile(ctx, query, args)
 }
 
-func (s *Storage) UpdateAvatarKey(ctx context.Context, subjID string, avatarKey string) error {
+func (s *Storage) UpdateAvatarKey(ctx context.Context, subjID string, avatarKey string) (*model.Profile, error) {
 	query, args, err := sq.
 		Update(ProfileTable).
 		Set(ProfileAvatarKeyLabel, avatarKey).
 		Set(ProfileUpdatedAtLabel, time.Now().UTC()).
 		Where(sq.Eq{ProfileSubjectIDLabel: subjID}).
 		Where(sq.Expr(deletedATIsNullProfileFilter)).
+		Suffix(ReturningSuffix).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
-		return fmt.Errorf("build sql: %w", err)
+		return nil, fmt.Errorf("build sql: %w", err)
 	}
 
-	_, err = s.exec.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("db exec: %w", err)
-	}
-
-	return nil
+	return s.doAndReturnProfile(ctx, query, args)
 }
 
-func (s *Storage) DeleteProfile(ctx context.Context, subjID string) error {
+func (s *Storage) DeleteProfile(ctx context.Context, subjID string) (*model.Profile, error) {
 	query, args, err := sq.
 		Update(ProfileTable).
 		Set(ProfileDeletedAtLabel, time.Now().UTC()).
 		Set(ProfileUpdatedAtLabel, time.Now().UTC()).
 		Where(sq.Eq{ProfileSubjectIDLabel: subjID}).
+		Where(sq.Expr(deletedATIsNullProfileFilter)).
+		Suffix(ReturningSuffix).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
-		return fmt.Errorf("build sql: %w", err)
+		return nil, fmt.Errorf("build sql: %w", err)
 	}
 
-	_, err = s.exec.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("db exec: %w", err)
-	}
-
-	return nil
+	return s.doAndReturnProfile(ctx, query, args)
 }
 
-func (s *Storage) DeleteAvatarKey(ctx context.Context, subjID string) error {
+func (s *Storage) DeleteAvatarKey(ctx context.Context, subjID string) (*model.Profile, error) {
 	query, args, err := sq.
 		Update(ProfileTable).
 		Set(ProfileAvatarKeyLabel, nil).
 		Set(ProfileUpdatedAtLabel, time.Now().UTC()).
 		Where(sq.Eq{ProfileSubjectIDLabel: subjID}).
+		Where(sq.Expr(deletedATIsNullProfileFilter)).
+		Suffix(ReturningSuffix).
 		PlaceholderFormat(sq.Dollar).
 		ToSql()
 
 	if err != nil {
-		return fmt.Errorf("build sql: %w", err)
+		return nil, fmt.Errorf("build sql: %w", err)
 	}
 
-	_, err = s.exec.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("db exec: %w", err)
-	}
-
-	return nil
+	return s.doAndReturnProfile(ctx, query, args)
 }

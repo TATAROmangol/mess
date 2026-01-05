@@ -67,17 +67,23 @@ func TestStorage_DeleteKeys(t *testing.T) {
 
 	keys := model.GetAvatarKeys(InitAvatarKeys)
 
-	err = s.AvatarKeyOutbox().DeleteKeys(t.Context(), keys)
+	modelKeys, err := s.AvatarKeyOutbox().DeleteKeys(t.Context(), keys)
 	if err != nil {
 		t.Fatalf("delete keys: %v", err)
 	}
 
-	data, err := s.AvatarKeyOutbox().GetKeys(t.Context(), len(InitAvatarKeys))
-	if err != nil {
-		t.Fatalf("get keys: %v", err)
+	if len(modelKeys) != len(keys) {
+		t.Fatalf("unexpected deleted keys count: got %d, want %d", len(modelKeys), len(keys))
 	}
 
-	if len(data) > 0 {
-		t.Fatalf("not currently delete, have: %v", data)
+	want := make(map[string]struct{}, len(keys))
+	for _, k := range keys {
+		want[k] = struct{}{}
+	}
+
+	for _, k := range modelKeys {
+		if _, ok := want[k.Key]; !ok {
+			t.Fatalf("unexpected deleted key: %v", k)
+		}
 	}
 }
