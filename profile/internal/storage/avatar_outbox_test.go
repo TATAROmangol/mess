@@ -65,7 +65,7 @@ func TestStorage_DeleteKeys(t *testing.T) {
 	initData(t)
 	defer cleanupDB(t)
 
-	keys := model.GetAvatarKeys(InitAvatarKeys)
+	keys := model.GetOutboxKeys(InitAvatarKeys)
 
 	modelKeys, err := s.AvatarOutbox().DeleteKeys(t.Context(), keys)
 	if err != nil {

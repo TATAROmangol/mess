@@ -9,7 +9,7 @@ type AvatarOutbox struct {
 	DeletedAt *time.Time
 }
 
-func GetAvatarKeys(arr []*AvatarOutbox) []string {
+func GetOutboxKeys(arr []*AvatarOutbox) []string {
 	res := make([]string, len(arr))
 	for i, k := range arr {
 		res[i] = k.Key
