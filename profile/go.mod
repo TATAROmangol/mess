@@ -4,7 +4,7 @@ go 1.25.5
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
-	github.com/TATAROmangol/mess/shared v0.0.0-20260104004405-f2d60a491afe
+	github.com/TATAROmangol/mess/shared v0.0.0-20260104100119-eb8933fc3266
 	github.com/aws/aws-sdk-go-v2 v1.41.0
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.95.0
 	github.com/golang-migrate/migrate/v4 v4.19.1
@@ -69,9 +69,11 @@ require (
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
+	github.com/pierrec/lz4/v4 v4.1.16 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/power-devops/perfstat v0.0.0-20210106213030-5aafc221ea8c // indirect
+	github.com/segmentio/kafka-go v0.4.49 // indirect
 	github.com/shirou/gopsutil/v4 v4.25.6 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/testcontainers/testcontainers-go v0.40.0 // indirect
