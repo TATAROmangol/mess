@@ -77,7 +77,62 @@ func TestAvatarUploader_Upload_SuccessUpdate(t *testing.T) {
 	tx.EXPECT().Rollback().Return(nil)
 
 	consumer.EXPECT().Commit(ctx, mqMsg).Return(nil)
-	lg.EXPECT().Info("success update")
+	lg.EXPECT().Info(gomock.Any())
+
+	if err := au.Upload(ctx); err != nil {
+		t.Fatalf("upload: %v", err)
+	}
+}
+
+func TestAvatarUploader_Upload_SuccessSkipOld(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	consumer := messagequeuemocks.NewMockConsumer(ctrl)
+	storage := storagemocks.NewMockService(ctrl)
+	profileRepo := storagemocks.NewMockProfile(ctrl)
+	outboxRepo := storagemocks.NewMockAvatarOutbox(ctrl)
+	lg := loggermocks.NewMockLogger(ctrl)
+
+	ctx := ctxkey.WithLogger(context.Background(), lg)
+
+	au := workers.AvatarUploader{
+		Consumer: consumer,
+		Storage:  storage,
+	}
+
+	subjectID := "123"
+	ind := model.NewAvatarIdentifier(subjectID, nil)
+	fKey, _ := ind.Key()
+
+	sInd := model.NewAvatarIdentifier(subjectID, &fKey)
+	sKey, _ := sInd.Key()
+
+	msg := workers.AvatarUploaderMessage{Key: sKey}
+	msgBytes, _ := json.Marshal(msg)
+
+	mqMsg := messagequeuemocks.NewMockMessage(ctrl)
+
+	profileBefore := &model.Profile{
+		SubjectID: subjectID,
+		AvatarKey: nil,
+	}
+	outbox := &model.AvatarOutbox{
+		SubjectID: subjectID,
+		Key:       msg.Key,
+	}
+
+	consumer.EXPECT().ReadMessage(ctx).Return(mqMsg, nil)
+	mqMsg.EXPECT().Value().Return(msgBytes)
+
+	storage.EXPECT().Profile().Return(profileRepo)
+	profileRepo.EXPECT().GetProfileFromSubjectID(ctx, subjectID).Return(profileBefore, nil)
+
+	storage.EXPECT().AvatarOutbox().Return(outboxRepo)
+	outboxRepo.EXPECT().AddKey(ctx, subjectID, msg.Key).Return(outbox, nil)
+	lg.EXPECT().With(loglables.AvatarOutbox, *outbox).Return(lg)
+
+	lg.EXPECT().Info(gomock.Any())
 
 	if err := au.Upload(ctx); err != nil {
 		t.Fatalf("upload: %v", err)
