@@ -147,7 +147,7 @@ func TestDomain_AddProfile_Success(t *testing.T) {
 
 	env.profile.EXPECT().AddProfile(env.ctx, subjID, alias).Return(profile, nil)
 
-	p, err := env.domain.AddProfile(env.ctx, alias)
+	p, _, err := env.domain.AddProfile(env.ctx, alias)
 	require.NoError(t, err)
 	require.Equal(t, profile, p)
 }

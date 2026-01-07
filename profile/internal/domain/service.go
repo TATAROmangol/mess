@@ -10,13 +10,13 @@ import (
 
 type Service interface {
 	GetCurrentProfile(ctx context.Context) (*model.Profile, string, error)
-
 	GetProfileFromSubjectID(ctx context.Context, subjID string) (*model.Profile, string, error)
 	GetProfilesFromAlias(ctx context.Context, alias string, size int, token string) (string, []*model.Profile, map[string]string, error)
 
-	AddProfile(ctx context.Context, alias string) (*model.Profile, error)
+	AddProfile(ctx context.Context, alias string) (*model.Profile, string, error)
 
 	UpdateProfileMetadata(ctx context.Context, prevVersion int, alias string) (*model.Profile, string, error)
+
 	UploadAvatar(ctx context.Context) (string, error)
 
 	DeleteAvatar(ctx context.Context) (*model.Profile, string, error)

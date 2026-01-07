@@ -75,18 +75,18 @@ func (d *Domain) GetProfilesFromAlias(ctx context.Context, alias string, size in
 	return nextToken, profiles, avatarsURLS, nil
 }
 
-func (d *Domain) AddProfile(ctx context.Context, alias string) (*model.Profile, error) {
+func (d *Domain) AddProfile(ctx context.Context, alias string) (*model.Profile, string, error) {
 	subj, err := ctxkey.ExtractSubject(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("extract subject: %v", err)
+		return nil, "", fmt.Errorf("extract subject: %v", err)
 	}
 
 	profile, err := d.Storage.Profile().AddProfile(ctx, subj.GetSubjectId(), alias)
 	if err != nil {
-		return nil, fmt.Errorf("profile add profile: %v", err)
+		return nil, "", fmt.Errorf("profile add profile: %v", err)
 	}
 
-	return profile, nil
+	return profile, "", nil
 }
 
 func (d *Domain) UpdateProfileMetadata(ctx context.Context, prevVersion int, alias string) (*model.Profile, string, error) {
