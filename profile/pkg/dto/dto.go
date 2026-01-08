@@ -1,4 +1,4 @@
-package transport
+package dto
 
 type ProfileResponse struct {
 	Alias     string `json:"alias"`

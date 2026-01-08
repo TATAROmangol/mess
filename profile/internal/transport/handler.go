@@ -6,6 +6,7 @@ import (
 
 	"github.com/TATAROmangol/mess/profile/internal/domain"
 	"github.com/TATAROmangol/mess/profile/internal/model"
+	"github.com/TATAROmangol/mess/profile/pkg/dto"
 	"github.com/gin-gonic/gin"
 )
 
@@ -42,7 +43,7 @@ func (h *Handler) GetProfile(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, ProfileResponse{
+	c.JSON(http.StatusOK, dto.ProfileResponse{
 		Alias:     profile.Alias,
 		AvatarURL: url,
 		Version:   profile.Version,
@@ -52,7 +53,7 @@ func (h *Handler) GetProfile(c *gin.Context) {
 func (h *Handler) GetProfiles(c *gin.Context) {
 	alias := c.Param("alias")
 
-	var req *GetProfilesRequest
+	var req *dto.GetProfilesRequest
 	if err := c.BindJSON(&req); err != nil {
 		h.sendError(c, err)
 		return
@@ -64,22 +65,22 @@ func (h *Handler) GetProfiles(c *gin.Context) {
 		return
 	}
 
-	res := make([]*ProfileResponse, len(profiles))
+	res := make([]*dto.ProfileResponse, len(profiles))
 	for _, profile := range profiles {
-		res = append(res, &ProfileResponse{
+		res = append(res, &dto.ProfileResponse{
 			Alias:     profile.Alias,
 			AvatarURL: urls[profile.SubjectID],
 			Version:   profile.Version,
 		})
 	}
 
-	c.JSON(http.StatusOK, GetProfilesResponse{
+	c.JSON(http.StatusOK, dto.GetProfilesResponse{
 		NextPage: next,
 	})
 }
 
 func (h *Handler) AddProfile(c *gin.Context) {
-	var req *AddProfileRequest
+	var req *dto.AddProfileRequest
 	if err := c.BindJSON(&req); err != nil {
 		h.sendError(c, err)
 		return
@@ -91,7 +92,7 @@ func (h *Handler) AddProfile(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, ProfileResponse{
+	c.JSON(http.StatusCreated, dto.ProfileResponse{
 		Alias:     profile.Alias,
 		AvatarURL: url,
 		Version:   profile.Version,
@@ -99,7 +100,7 @@ func (h *Handler) AddProfile(c *gin.Context) {
 }
 
 func (h *Handler) UpdateProfileMetadata(c *gin.Context) {
-	var req *UpdateProfileMetadataRequest
+	var req *dto.UpdateProfileMetadataRequest
 	if err := c.BindJSON(&req); err != nil {
 		h.sendError(c, err)
 		return
@@ -111,7 +112,7 @@ func (h *Handler) UpdateProfileMetadata(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, ProfileResponse{
+	c.JSON(http.StatusOK, dto.ProfileResponse{
 		Alias:     profile.Alias,
 		AvatarURL: url,
 		Version:   profile.Version,
@@ -125,7 +126,7 @@ func (h *Handler) UploadAvatar(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, UploadAvatarResponse{
+	c.JSON(http.StatusOK, dto.UploadAvatarResponse{
 		UploadURL: url,
 	})
 }
@@ -137,7 +138,7 @@ func (h *Handler) DeleteAvatar(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, ProfileResponse{
+	c.JSON(http.StatusOK, dto.ProfileResponse{
 		Alias:     profile.Alias,
 		AvatarURL: url,
 		Version:   profile.Version,
