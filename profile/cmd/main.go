@@ -20,6 +20,7 @@ import (
 	workers "github.com/TATAROmangol/mess/profile/internal/wokers"
 	"github.com/TATAROmangol/mess/shared/auth/keycloak"
 	"github.com/TATAROmangol/mess/shared/logger"
+	"github.com/TATAROmangol/mess/shared/postgres"
 )
 
 func main() {
@@ -40,6 +41,18 @@ func main() {
 	storage, err := storage.New(cfg.Postgres)
 	if err != nil {
 		lg.Error(fmt.Errorf("storage new: %v", err))
+		return
+	}
+
+	mig, err := postgres.NewMigrator(cfg.Postgres, cfg.MigrationsPath)
+	if err != nil {
+		lg.Error(fmt.Errorf("migrator new: %v", err))
+		return
+	}
+	defer mig.Close()
+
+	if err = mig.Up(); err != nil {
+		lg.Error(fmt.Errorf("migrator up: %v", err))
 		return
 	}
 

@@ -8,4 +8,5 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app ./cmd/main.go
 FROM alpine:latest
 WORKDIR /root/
 COPY --from=builder /temp/app .
+COPY --from=builder /temp/migrations migrations
 CMD ["./app"]

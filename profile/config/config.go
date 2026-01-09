@@ -14,6 +14,7 @@ import (
 )
 
 type Config struct {
+	MigrationsPath string                       `yaml:"migrations_path"`
 	Postgres       postgres.Config              `yaml:"postgres"`
 	S3             avatar.Config                `yaml:"s3"`
 	HTTP           transport.Config             `yaml:"http"`
