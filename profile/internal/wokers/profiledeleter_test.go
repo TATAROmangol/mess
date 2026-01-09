@@ -65,7 +65,6 @@ func TestProfileDeleter_AdminDelete_Success(t *testing.T) {
 
 	consumer.EXPECT().ReadMessage(ctx).Return(mqMsg, nil)
 	store.EXPECT().DeleteProfile(ctx, "user123").Return(&model.Profile{SubjectID: "user123"}, nil)
-	lg.EXPECT().With(loglables.SubjectID, gomock.Any()).Return(lg)
 	lg.EXPECT().With(loglables.Profile, gomock.Any()).Return(lg)
 	lg.EXPECT().Info("success deleted")
 

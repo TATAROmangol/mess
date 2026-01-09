@@ -71,7 +71,7 @@ func (s *Storage) Close() error {
 func (s *Storage) WithTransaction(ctx context.Context) (ServiceTransaction, error) {
 	tx, err := s.db.BeginTxx(ctx, nil)
 	if err != nil {
-		return nil, fmt.Errorf("begin txx: %v", err)
+		return nil, fmt.Errorf("begin txx: %w", err)
 	}
 
 	return &Storage{

@@ -28,73 +28,79 @@ func main() {
 	defer cancel()
 
 	lg := logger.New(slog.NewJSONHandler(os.Stdout, nil))
-	lg = lg.With(loglables.ServiceName, "profile_microservice")
+	lg = lg.With(loglables.Service, "profile_microservice")
 
 	ctx = ctxkey.WithLogger(ctx, lg)
 
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		lg.Error(fmt.Errorf("load config: %v", err))
+		lg.Error(fmt.Errorf("load config: %w", err))
 		return
 	}
 
 	storage, err := storage.New(cfg.Postgres)
 	if err != nil {
-		lg.Error(fmt.Errorf("storage new: %v", err))
+		lg.Error(fmt.Errorf("storage new: %w", err))
 		return
 	}
 
 	mig, err := postgres.NewMigrator(cfg.Postgres, cfg.MigrationsPath)
 	if err != nil {
-		lg.Error(fmt.Errorf("migrator new: %v", err))
+		lg.Error(fmt.Errorf("migrator new: %w", err))
 		return
 	}
 	defer mig.Close()
 
 	if err = mig.Up(); err != nil {
-		lg.Error(fmt.Errorf("migrator up: %v", err))
+		lg.Error(fmt.Errorf("migrator up: %w", err))
 		return
 	}
 
 	avatar, err := avatar.New(ctx, cfg.S3)
 	if err != nil {
-		lg.Error(fmt.Errorf("avatar new: %v", err))
+		lg.Error(fmt.Errorf("avatar new: %w", err))
 		return
 	}
 
 	dom := domain.New(storage, avatar)
 
 	ad := workers.NewAvatarDeleter(cfg.AvatarDeleter, avatar, storage.AvatarOutbox())
-	err = ad.Start(ctx)
+	avdelLog := lg.With(loglables.Layer, "worker_avatar_deleter")
+	err = ad.Start(ctxkey.WithLogger(ctx, avdelLog))
 	if err != nil {
-		lg.Error(fmt.Errorf("avatar deleter start: %v", err))
+		lg.Error(fmt.Errorf("avatar deleter start: %w", err))
 		return
 	}
+	lg.Info("avatar deleter started")
 
 	au := workers.NewAvatarUploader(cfg.AvatarUploader, storage)
-	err = au.Start(ctx)
+	upLog := lg.With(loglables.Layer, "worker_avatar_uploader")
+	err = au.Start(ctxkey.WithLogger(ctx, upLog))
 	if err != nil {
-		lg.Error(fmt.Errorf("avatar uploader start: %v", err))
+		lg.Error(fmt.Errorf("avatar uploader start: %w", err))
 		return
 	}
+	lg.Info("avatar uploader started")
 
 	pd := workers.NewProfileDeleter(cfg.ProfileDeleter, storage.Profile())
-	err = pd.Start(ctx)
+	pdelLog := lg.With(loglables.Layer, "worker_profile_deleter")
+	err = pd.Start(ctxkey.WithLogger(ctx, pdelLog))
 	if err != nil {
-		lg.Error(fmt.Errorf("profile deleter start: %v", err))
+		lg.Error(fmt.Errorf("profile deleter start: %w", err))
 		return
 	}
+	lg.Info("profile deleter started")
 
 	keycloak, err := keycloak.New(cfg.Keycloak, lg)
 	if err != nil {
-		lg.Error(fmt.Errorf("keycloak new: %v", err))
+		lg.Error(fmt.Errorf("keycloak new: %w", err))
 		return
 	}
 
 	server := transport.NewServer(cfg.HTTP, lg, dom, keycloak)
 	go func() {
 		if err := server.Run(); err != nil && !errors.Is(http.ErrServerClosed, err) {
-			lg.Error(fmt.Errorf("server run: %v", err))
+			lg.Error(fmt.Errorf("server run: %w", err))
 			return
 		}
 	}()
@@ -107,7 +113,7 @@ func main() {
 
 	err = server.Stop(ctx)
 	if err != nil {
-		lg.Error(fmt.Errorf("server stop: %v", err))
+		lg.Error(fmt.Errorf("server stop: %w", err))
 	}
 	lg.Info("server is stop")
 

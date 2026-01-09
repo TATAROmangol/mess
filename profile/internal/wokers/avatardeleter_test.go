@@ -32,10 +32,12 @@ func TestAvatarDeleter_Delete(t *testing.T) {
 	outboxKeys := model.GetOutboxKeys(keys)
 
 	outbox.EXPECT().GetKeys(ctx, workers.DeleteAvatarsLimit).Return(keys, nil)
+	outbox.EXPECT().GetKeys(ctx, workers.DeleteAvatarsLimit).Return([]*model.AvatarOutbox{}, nil)
 	avatar.EXPECT().DeleteObjects(ctx, outboxKeys).Return(nil)
 	outbox.EXPECT().DeleteKeys(ctx, outboxKeys).Return(keys, nil)
 	lg.EXPECT().With(loglables.DeletedAvatarKeys, outboxKeys).Return(lg)
 	lg.EXPECT().Info("success delete")
+	lg.EXPECT().Info(gomock.Any())
 
 	svc := workers.AvatarDeleter{
 		Avatar: avatar,

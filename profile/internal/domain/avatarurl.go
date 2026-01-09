@@ -15,7 +15,7 @@ func (d *Domain) GetAvatarURL(ctx context.Context, key *string) (string, error) 
 
 	avatarURL, err := d.Avatar.GetAvatarURL(ctx, *key)
 	if err != nil {
-		return "", fmt.Errorf("get avatar url: %v", err)
+		return "", fmt.Errorf("get avatar url: %w", err)
 	}
 
 	return avatarURL, nil

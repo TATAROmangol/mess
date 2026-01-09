@@ -38,13 +38,13 @@ func NewAvatarDeleter(cfg AvatarDeleterConfig, avatar avatar.Service, outbox sto
 func (ad *AvatarDeleter) Delete(ctx context.Context) error {
 	lg, err := ctxkey.ExtractLogger(ctx)
 	if err != nil {
-		return fmt.Errorf("extract logger: %v", err)
+		return fmt.Errorf("extract logger: %w", err)
 	}
 
 	for {
 		keys, err := ad.Outbox.GetKeys(ctx, DeleteAvatarsLimit)
 		if err != nil {
-			return fmt.Errorf("outbox get keys: %v", err)
+			return fmt.Errorf("outbox get keys: %w", err)
 		}
 		if len(keys) == 0 {
 			lg.Info("no more avatars to delete")
@@ -52,12 +52,12 @@ func (ad *AvatarDeleter) Delete(ctx context.Context) error {
 		}
 
 		if err = ad.Avatar.DeleteObjects(ctx, model.GetOutboxKeys(keys)); err != nil {
-			return fmt.Errorf("avatar delete objects: %v", err)
+			return fmt.Errorf("avatar delete objects: %w", err)
 		}
 
 		outboxes, err := ad.Outbox.DeleteKeys(ctx, model.GetOutboxKeys(keys))
 		if err != nil {
-			return fmt.Errorf("outbox delete keys: %v", err)
+			return fmt.Errorf("outbox delete keys: %w", err)
 		}
 		lg = lg.With(loglables.DeletedAvatarKeys, model.GetOutboxKeys(outboxes))
 		lg.Info("success delete")
@@ -94,7 +94,7 @@ func (ad *AvatarDeleter) delayUntilRunAt() time.Duration {
 func (ad *AvatarDeleter) Start(ctx context.Context) error {
 	lg, err := ctxkey.ExtractLogger(ctx)
 	if err != nil {
-		return fmt.Errorf("extract logger: %v", err)
+		return fmt.Errorf("extract logger: %w", err)
 	}
 
 	go func() {
@@ -106,7 +106,7 @@ func (ad *AvatarDeleter) Start(ctx context.Context) error {
 		select {
 		case <-timer.C:
 			if err := ad.Delete(ctx); err != nil {
-				lg.Error(fmt.Errorf("delete old avatars: %v", err))
+				lg.Error(fmt.Errorf("delete old avatars: %w", err))
 			}
 		case <-ctx.Done():
 			return
@@ -119,7 +119,7 @@ func (ad *AvatarDeleter) Start(ctx context.Context) error {
 			select {
 			case <-ticker.C:
 				if err := ad.Delete(ctx); err != nil {
-					lg.Error(fmt.Errorf("delete old avatars: %v", err))
+					lg.Error(fmt.Errorf("delete old avatars: %w", err))
 				}
 			case <-ctx.Done():
 				return

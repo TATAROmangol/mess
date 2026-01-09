@@ -52,27 +52,27 @@ func NewAvatarUploader(cfg AvatarUploaderConfig, storage storage.Service) *Avata
 func (au *AvatarUploader) Upload(ctx context.Context) error {
 	lg, err := ctxkey.ExtractLogger(ctx)
 	if err != nil {
-		return fmt.Errorf("extract logger: %v", err)
+		return fmt.Errorf("extract logger: %w", err)
 	}
 
 	mqMsg, err := au.Consumer.ReadMessage(ctx)
 	if err != nil {
-		return fmt.Errorf("read message: %v", err)
+		return fmt.Errorf("read message: %w", err)
 	}
 
 	var msg AvatarUploaderMessage
 	if err := json.Unmarshal(mqMsg.Value(), &msg); err != nil {
-		return fmt.Errorf("unmarshal: %v", err)
+		return fmt.Errorf("unmarshal: %w", err)
 	}
 
 	ind, err := model.ParseAvatarKey(msg.Key())
 	if err != nil {
-		return fmt.Errorf("parse avatar key token: %v", err)
+		return fmt.Errorf("parse avatar key token: %w", err)
 	}
 
 	prevProfile, err := au.Storage.Profile().GetProfileFromSubjectID(ctx, ind.SubjectID)
 	if err != nil {
-		return fmt.Errorf("profile get profile from subject id: %v", err)
+		return fmt.Errorf("profile get profile from subject id: %w", err)
 	}
 
 	if utils.StringPtrEqual(prevProfile.AvatarKey, utils.StringPtr(msg.Key())) {
@@ -84,11 +84,11 @@ func (au *AvatarUploader) Upload(ctx context.Context) error {
 	if !utils.StringPtrEqual(ind.PreviousKey, prevProfile.AvatarKey) {
 		outboxKey, err := au.Storage.AvatarOutbox().AddKey(ctx, ind.SubjectID, msg.Key())
 		if err != nil {
-			return fmt.Errorf("avatar key outbox add key: %v", err)
+			return fmt.Errorf("avatar key outbox add key: %w", err)
 		}
 		lg = lg.With(loglables.AvatarOutbox, *outboxKey)
 		if err = au.Consumer.Commit(ctx, mqMsg); err != nil {
-			return fmt.Errorf("commit: %v", err)
+			return fmt.Errorf("commit: %w", err)
 		}
 		lg.Info("add avatar outbox, skip old message")
 		return nil
@@ -97,11 +97,11 @@ func (au *AvatarUploader) Upload(ctx context.Context) error {
 	if ind.PreviousKey == nil {
 		profile, err := au.Storage.Profile().UpdateAvatarKey(ctx, ind.SubjectID, msg.Key())
 		if err != nil {
-			return fmt.Errorf("profile update avatar key: %v", err)
+			return fmt.Errorf("profile update avatar key: %w", err)
 		}
 		lg = lg.With(loglables.Profile, *profile)
 		if err = au.Consumer.Commit(ctx, mqMsg); err != nil {
-			return fmt.Errorf("commit: %v", err)
+			return fmt.Errorf("commit: %w", err)
 		}
 		lg.Info("success update")
 		return nil
@@ -109,28 +109,28 @@ func (au *AvatarUploader) Upload(ctx context.Context) error {
 
 	tx, err := au.Storage.WithTransaction(ctx)
 	if err != nil {
-		return fmt.Errorf("with transaction: %v", err)
+		return fmt.Errorf("with transaction: %w", err)
 	}
 	defer tx.Rollback()
 
 	profile, err := tx.Profile().UpdateAvatarKey(ctx, ind.SubjectID, msg.Key())
 	if err != nil {
-		return fmt.Errorf("profile update avatar key: %v", err)
+		return fmt.Errorf("profile update avatar key: %w", err)
 	}
 	lg = lg.With(loglables.Profile, *profile)
 
 	outbox, err := au.Storage.AvatarOutbox().AddKey(ctx, ind.SubjectID, *prevProfile.AvatarKey)
 	if err != nil {
-		return fmt.Errorf("avatar key outbox add key: %v", err)
+		return fmt.Errorf("avatar key outbox add key: %w", err)
 	}
 	lg = lg.With(loglables.AvatarOutbox, *outbox)
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("commit: %v", err)
+		return fmt.Errorf("commit: %w", err)
 	}
 
 	if err = au.Consumer.Commit(ctx, mqMsg); err != nil {
-		return fmt.Errorf("commit: %v", err)
+		return fmt.Errorf("commit: %w", err)
 	}
 
 	lg.Info("success update")
@@ -141,7 +141,7 @@ func (au *AvatarUploader) Upload(ctx context.Context) error {
 func (au *AvatarUploader) Start(ctx context.Context) error {
 	lg, err := ctxkey.ExtractLogger(ctx)
 	if err != nil {
-		return fmt.Errorf("extract logger: %v", err)
+		return fmt.Errorf("extract logger: %w", err)
 	}
 
 	go func() {
@@ -151,7 +151,7 @@ func (au *AvatarUploader) Start(ctx context.Context) error {
 				continue
 			}
 
-			lg.Error(fmt.Errorf("upload: %v", err))
+			lg.Error(fmt.Errorf("upload: %w", err))
 
 			select {
 			case <-time.After(au.CFG.Delay):

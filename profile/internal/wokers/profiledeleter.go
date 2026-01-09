@@ -62,23 +62,22 @@ func NewProfileDeleter(cfg ProfileDeleterConfig, profile storage.Profile) *Profi
 func ProfileDelete[T ProfileDeleteMessage](ctx context.Context, cons messagequeue.Consumer, store storage.Profile) error {
 	lg, err := ctxkey.ExtractLogger(ctx)
 	if err != nil {
-		return fmt.Errorf("extract logger: %v", err)
+		return fmt.Errorf("extract logger: %w", err)
 	}
 
 	mqMsg, err := cons.ReadMessage(ctx)
 	if err != nil {
-		return fmt.Errorf("read message: %v", err)
+		return fmt.Errorf("read message: %w", err)
 	}
 
 	var msg T
 	if err := json.Unmarshal(mqMsg.Value(), &msg); err != nil {
-		return fmt.Errorf("unmarshal: %v", err)
+		return fmt.Errorf("unmarshal: %w", err)
 	}
-	lg = lg.With(loglables.SubjectID, msg.GetSubjectID())
 
 	prof, err := store.DeleteProfile(ctx, msg.GetSubjectID())
 	if err != nil && !errors.Is(err, storage.ErrNoRows) {
-		return fmt.Errorf("delete profile: %v", err)
+		return fmt.Errorf("delete profile: %w", err)
 	}
 	if errors.Is(err, storage.ErrNoRows) {
 		lg.Info("profile not found, nothing to delete")
@@ -102,7 +101,7 @@ func (pd *ProfileDeleter) AdminDelete(ctx context.Context) error {
 func (pd *ProfileDeleter) Start(ctx context.Context) error {
 	lg, err := ctxkey.ExtractLogger(ctx)
 	if err != nil {
-		return fmt.Errorf("extract logger: %v", err)
+		return fmt.Errorf("extract logger: %w", err)
 	}
 
 	go func() {
@@ -112,7 +111,7 @@ func (pd *ProfileDeleter) Start(ctx context.Context) error {
 				continue
 			}
 
-			lg.Error(fmt.Errorf("client delete: %v", err))
+			lg.Error(fmt.Errorf("client delete: %w", err))
 
 			select {
 			case <-time.After(pd.CFG.Delay):
@@ -129,7 +128,7 @@ func (pd *ProfileDeleter) Start(ctx context.Context) error {
 				continue
 			}
 
-			lg.Error(fmt.Errorf("admin delete: %v", err))
+			lg.Error(fmt.Errorf("admin delete: %w", err))
 
 			select {
 			case <-time.After(pd.CFG.Delay):

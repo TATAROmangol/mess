@@ -12,7 +12,8 @@ const (
 	RequestID       = "request_id"
 	StatusResponse  = "status"
 
-	ServiceName = "service_name"
+	Service = "service"
+	Layer   = "layer"
 
 	MessageLabel = "message"
 	SubjectID    = "subject_id"

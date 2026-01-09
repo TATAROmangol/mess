@@ -29,7 +29,7 @@ func SetRequestMetadataMiddleware() gin.HandlerFunc {
 
 		lg, err := ctxkey.ExtractLogger(c.Request.Context())
 		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("extract logger: %v", err))
+			c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("extract logger: %w", err))
 			return
 		}
 
@@ -60,7 +60,7 @@ func LogResponseMiddleware() gin.HandlerFunc {
 
 		lg, err := ctxkey.ExtractLogger(c.Request.Context())
 		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("extract logger: %v", err))
+			c.AbortWithError(http.StatusInternalServerError, fmt.Errorf("extract logger: %w", err))
 			return
 		}
 
@@ -85,7 +85,7 @@ func InitSubjectMiddleware(auth auth.Service) gin.HandlerFunc {
 
 		sub, err := auth.Verify(token)
 		if err != nil {
-			c.AbortWithError(http.StatusUnauthorized, fmt.Errorf("verify token: %v", err))
+			c.AbortWithError(http.StatusUnauthorized, fmt.Errorf("verify token: %w", err))
 			return
 		}
 

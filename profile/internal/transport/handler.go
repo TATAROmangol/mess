@@ -163,7 +163,7 @@ func (h *Handler) sendError(c *gin.Context, err error) {
 	var code int
 
 	if errors.Is(err, domain.ErrNotFound) {
-		code = http.StatusNotFound
+		code = http.StatusNoContent
 	}
 
 	if code == 0 {

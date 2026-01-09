@@ -28,7 +28,7 @@ func NewAvatarIdentifier(subjectID string, prevToken *string) *AvatarIdentifier 
 func (av *AvatarIdentifier) Key() (string, error) {
 	data, err := json.Marshal(av)
 	if err != nil {
-		return "", fmt.Errorf("marshal: %v", err)
+		return "", fmt.Errorf("marshal: %w", err)
 	}
 	return base64.RawURLEncoding.EncodeToString(data), nil
 }

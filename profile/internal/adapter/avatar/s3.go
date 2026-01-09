@@ -48,7 +48,7 @@ func (s *S3) GetUploadURL(ctx context.Context, key string) (string, error) {
 		s3.WithPresignExpires(s.cfg.PresignDuration),
 	)
 	if err != nil {
-		return "", fmt.Errorf("presign upload part: %v", err)
+		return "", fmt.Errorf("presign upload part: %w", err)
 	}
 
 	return req.URL, nil
@@ -64,7 +64,7 @@ func (s *S3) GetAvatarURL(ctx context.Context, key string) (string, error) {
 	)
 
 	if err != nil {
-		return "", fmt.Errorf("presign get object: %v", err)
+		return "", fmt.Errorf("presign get object: %w", err)
 	}
 
 	return req.URL, nil
