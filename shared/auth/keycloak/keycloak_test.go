@@ -3,7 +3,6 @@ package keycloak_test
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"testing"
 	"time"
 
@@ -40,7 +39,6 @@ func TestMain(m *testing.M) {
 
 type TokenResponse struct {
 	AccessToken string `json:"access_token"`
-	TokenType   string `json:"token_type"`
 }
 
 func getToken(t *testing.T) string {
@@ -74,7 +72,7 @@ func getToken(t *testing.T) string {
 		t.Fatalf("failed to unmarshal token response: %v", err)
 	}
 
-	return fmt.Sprintf("%v %v", res.TokenType, res.AccessToken)
+	return res.AccessToken
 }
 
 func TestKeycloak_Verify(t *testing.T) {
