@@ -44,10 +44,10 @@ func NewServer(cfg Config, lg logger.Logger, domain domain.Service, auth auth.Se
 	r.POST("/add/profile", h.AddProfile)
 
 	r.PUT("/put/profile", h.UpdateProfileMetadata)
-
 	r.PUT("/upload/avatar", h.UploadAvatar)
 
 	r.DELETE("/delete/avatar", h.DeleteAvatar)
+	r.DELETE("/delete/profile", h.DeleteProfile)
 
 	return &HTTPServer{
 		cfg: &cfg,

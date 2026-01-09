@@ -40,9 +40,30 @@ func TestAvatarUploader_Upload_SuccessUpdate(t *testing.T) {
 	sInd := model.NewAvatarIdentifier(subjectID, &fKey)
 	sKey, _ := sInd.Key()
 
-	msg := workers.AvatarUploaderMessage{Key: sKey}
-	msgBytes, _ := json.Marshal(msg)
+	// формируем сообщение с новой структурой
+	msg := workers.AvatarUploaderMessage{
+		Records: []struct {
+			S3 struct {
+				Object struct {
+					Key string `json:"key"`
+				} `json:"object"`
+			} `json:"s3"`
+		}{
+			{
+				S3: struct {
+					Object struct {
+						Key string `json:"key"`
+					} `json:"object"`
+				}{
+					Object: struct {
+						Key string `json:"key"`
+					}{Key: sKey},
+				},
+			},
+		},
+	}
 
+	msgBytes, _ := json.Marshal(msg)
 	mqMsg := messagequeuemocks.NewMockMessage(ctrl)
 
 	profileBefore := &model.Profile{
@@ -66,7 +87,7 @@ func TestAvatarUploader_Upload_SuccessUpdate(t *testing.T) {
 
 	storage.EXPECT().WithTransaction(ctx).Return(tx, nil)
 	tx.EXPECT().Profile().Return(profileRepo)
-	profileRepo.EXPECT().UpdateAvatarKey(ctx, subjectID, msg.Key).Return(profileAfter, nil)
+	profileRepo.EXPECT().UpdateAvatarKey(ctx, subjectID, msg.Key()).Return(profileAfter, nil)
 	lg.EXPECT().With(loglables.Profile, *profileAfter).Return(lg)
 
 	storage.EXPECT().AvatarOutbox().Return(outboxRepo)
@@ -102,15 +123,33 @@ func TestAvatarUploader_Upload_SuccessSkipOld(t *testing.T) {
 	}
 
 	subjectID := "123"
-	ind := model.NewAvatarIdentifier(subjectID, nil)
+	ind := model.NewAvatarIdentifier(subjectID, &subjectID)
 	fKey, _ := ind.Key()
 
-	sInd := model.NewAvatarIdentifier(subjectID, &fKey)
-	sKey, _ := sInd.Key()
+	// создаём сообщение
+	msg := workers.AvatarUploaderMessage{
+		Records: []struct {
+			S3 struct {
+				Object struct {
+					Key string `json:"key"`
+				} `json:"object"`
+			} `json:"s3"`
+		}{
+			{
+				S3: struct {
+					Object struct {
+						Key string `json:"key"`
+					} `json:"object"`
+				}{
+					Object: struct {
+						Key string `json:"key"`
+					}{Key: fKey},
+				},
+			},
+		},
+	}
 
-	msg := workers.AvatarUploaderMessage{Key: sKey}
 	msgBytes, _ := json.Marshal(msg)
-
 	mqMsg := messagequeuemocks.NewMockMessage(ctrl)
 
 	profileBefore := &model.Profile{
@@ -119,19 +158,17 @@ func TestAvatarUploader_Upload_SuccessSkipOld(t *testing.T) {
 	}
 	outbox := &model.AvatarOutbox{
 		SubjectID: subjectID,
-		Key:       msg.Key,
+		Key:       msg.Key(),
 	}
 
 	consumer.EXPECT().ReadMessage(ctx).Return(mqMsg, nil)
 	mqMsg.EXPECT().Value().Return(msgBytes)
-
 	storage.EXPECT().Profile().Return(profileRepo)
 	profileRepo.EXPECT().GetProfileFromSubjectID(ctx, subjectID).Return(profileBefore, nil)
-
 	storage.EXPECT().AvatarOutbox().Return(outboxRepo)
-	outboxRepo.EXPECT().AddKey(ctx, subjectID, msg.Key).Return(outbox, nil)
+	outboxRepo.EXPECT().AddKey(ctx, subjectID, msg.Key()).Return(outbox, nil)
 	lg.EXPECT().With(loglables.AvatarOutbox, *outbox).Return(lg)
-
+	consumer.EXPECT().Commit(ctx, mqMsg).Return(nil)
 	lg.EXPECT().Info(gomock.Any())
 
 	if err := au.Upload(ctx); err != nil {

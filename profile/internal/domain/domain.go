@@ -176,3 +176,52 @@ func (d *Domain) DeleteAvatar(ctx context.Context) (*model.Profile, string, erro
 
 	return prof, "", nil
 }
+
+func (d *Domain) DeleteProfile(ctx context.Context) (*model.Profile, string, error) {
+	subj, err := ctxkey.ExtractSubject(ctx)
+	if err != nil {
+		return nil, "", fmt.Errorf("extract subject: %v", err)
+	}
+	lg, err := ctxkey.ExtractLogger(ctx)
+	if err != nil {
+		return nil, "", fmt.Errorf("extract logger: %v", err)
+	}
+
+	prof, err := d.Storage.Profile().GetProfileFromSubjectID(ctx, subj.GetSubjectId())
+	if err != nil {
+		return nil, "", fmt.Errorf("profile get profile from subject id: %v", err)
+	}
+
+	if prof.AvatarKey == nil {
+		prof, err := d.Storage.Profile().DeleteProfile(ctx, subj.GetSubjectId())
+		if err != nil {
+			return nil, "", fmt.Errorf("delete profile: %v", err)
+		}
+		return prof, "", nil
+	}
+
+	s, err := d.Storage.WithTransaction(ctx)
+	if err != nil {
+		return nil, "", fmt.Errorf("with transaction: %v", err)
+	}
+	defer s.Rollback()
+
+	prof, err = s.Profile().DeleteProfile(ctx, subj.GetSubjectId())
+	if err != nil {
+		return nil, "", fmt.Errorf("delete profile: %v", err)
+	}
+
+	outbox, err := s.AvatarOutbox().AddKey(ctx, prof.SubjectID, *prof.AvatarKey)
+	if err != nil {
+		return nil, "", fmt.Errorf("add key: %v", err)
+	}
+	lg.With(loglables.AvatarOutbox, *outbox)
+
+	if err := s.Commit(); err != nil {
+		return nil, "", fmt.Errorf("commit: %v", err)
+	}
+
+	lg.Info("add avatar outbox")
+
+	return prof, "", nil
+}

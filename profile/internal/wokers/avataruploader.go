@@ -21,7 +21,17 @@ type AvatarUploaderConfig struct {
 }
 
 type AvatarUploaderMessage struct {
-	Key string `json:"Key"`
+	Records []struct {
+		S3 struct {
+			Object struct {
+				Key string `json:"key"`
+			} `json:"object"`
+		} `json:"s3"`
+	} `json:"Records"`
+}
+
+func (aum *AvatarUploaderMessage) Key() string {
+	return aum.Records[0].S3.Object.Key
 }
 
 type AvatarUploader struct {
@@ -55,7 +65,7 @@ func (au *AvatarUploader) Upload(ctx context.Context) error {
 		return fmt.Errorf("unmarshal: %v", err)
 	}
 
-	ind, err := model.ParseAvatarKey(msg.Key)
+	ind, err := model.ParseAvatarKey(msg.Key())
 	if err != nil {
 		return fmt.Errorf("parse avatar key token: %v", err)
 	}
@@ -65,19 +75,35 @@ func (au *AvatarUploader) Upload(ctx context.Context) error {
 		return fmt.Errorf("profile get profile from subject id: %v", err)
 	}
 
-	if utils.StringPtrEqual(prevProfile.AvatarKey, &msg.Key) {
+	if utils.StringPtrEqual(prevProfile.AvatarKey, utils.StringPtr(msg.Key())) {
 		lg = lg.With(loglables.AvatarKey, msg.Key)
 		lg.Info("skip duplicate")
 		return nil
 	}
 
 	if !utils.StringPtrEqual(ind.PreviousKey, prevProfile.AvatarKey) {
-		outboxKey, err := au.Storage.AvatarOutbox().AddKey(ctx, ind.SubjectID, msg.Key)
+		outboxKey, err := au.Storage.AvatarOutbox().AddKey(ctx, ind.SubjectID, msg.Key())
 		if err != nil {
 			return fmt.Errorf("avatar key outbox add key: %v", err)
 		}
 		lg = lg.With(loglables.AvatarOutbox, *outboxKey)
+		if err = au.Consumer.Commit(ctx, mqMsg); err != nil {
+			return fmt.Errorf("commit: %v", err)
+		}
 		lg.Info("add avatar outbox, skip old message")
+		return nil
+	}
+
+	if ind.PreviousKey == nil {
+		profile, err := au.Storage.Profile().UpdateAvatarKey(ctx, ind.SubjectID, msg.Key())
+		if err != nil {
+			return fmt.Errorf("profile update avatar key: %v", err)
+		}
+		lg = lg.With(loglables.Profile, *profile)
+		if err = au.Consumer.Commit(ctx, mqMsg); err != nil {
+			return fmt.Errorf("commit: %v", err)
+		}
+		lg.Info("success update")
 		return nil
 	}
 
@@ -87,7 +113,7 @@ func (au *AvatarUploader) Upload(ctx context.Context) error {
 	}
 	defer tx.Rollback()
 
-	profile, err := tx.Profile().UpdateAvatarKey(ctx, ind.SubjectID, msg.Key)
+	profile, err := tx.Profile().UpdateAvatarKey(ctx, ind.SubjectID, msg.Key())
 	if err != nil {
 		return fmt.Errorf("profile update avatar key: %v", err)
 	}

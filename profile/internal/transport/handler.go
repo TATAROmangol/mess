@@ -145,6 +145,20 @@ func (h *Handler) DeleteAvatar(c *gin.Context) {
 	})
 }
 
+func (h *Handler) DeleteProfile(c *gin.Context) {
+	profile, url, err := h.domain.DeleteProfile(c.Request.Context())
+	if err != nil {
+		h.sendError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, dto.ProfileResponse{
+		Alias:     profile.Alias,
+		AvatarURL: url,
+		Version:   profile.Version,
+	})
+}
+
 func (h *Handler) sendError(c *gin.Context, err error) {
 	var code int
 
