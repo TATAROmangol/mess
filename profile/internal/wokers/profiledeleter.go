@@ -76,12 +76,19 @@ func ProfileDelete[T ProfileDeleteMessage](ctx context.Context, cons messagequeu
 	}
 
 	prof, err := store.DeleteProfile(ctx, msg.GetSubjectID())
-	if err != nil && !errors.Is(err, storage.ErrNoRows) {
-		return fmt.Errorf("delete profile: %w", err)
-	}
-	if errors.Is(err, storage.ErrNoRows) {
+	if err != nil && errors.Is(err, storage.ErrNoRows) {
+		if err := cons.Commit(ctx, mqMsg); err != nil {
+			return fmt.Errorf("commit message: %w", err)
+		}
 		lg.Info("profile not found, nothing to delete")
 		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("delete profile: %w", err)
+	}
+
+	if err := cons.Commit(ctx, mqMsg); err != nil {
+		return fmt.Errorf("commit message: %w", err)
 	}
 
 	lg = lg.With(loglables.Profile, *prof)

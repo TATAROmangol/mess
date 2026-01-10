@@ -67,7 +67,7 @@ func (ad *AvatarDeleter) Delete(ctx context.Context) error {
 }
 
 func (ad *AvatarDeleter) delayUntilRunAt() time.Duration {
-	if ad.CFG.Interval == -1 {
+	if ad.CFG.RunHourUTC == -1 {
 		return time.Duration(0)
 	}
 
