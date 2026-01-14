@@ -44,6 +44,7 @@ func (h *Handler) GetProfile(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, dto.ProfileResponse{
+		SubjectID: profile.SubjectID,
 		Alias:     profile.Alias,
 		AvatarURL: url,
 		Version:   profile.Version,
@@ -68,6 +69,7 @@ func (h *Handler) GetProfiles(c *gin.Context) {
 	res := make([]*dto.ProfileResponse, len(profiles))
 	for _, profile := range profiles {
 		res = append(res, &dto.ProfileResponse{
+			SubjectID: profile.SubjectID,
 			Alias:     profile.Alias,
 			AvatarURL: urls[profile.SubjectID],
 			Version:   profile.Version,
@@ -93,6 +95,7 @@ func (h *Handler) AddProfile(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, dto.ProfileResponse{
+		SubjectID: profile.SubjectID,
 		Alias:     profile.Alias,
 		AvatarURL: url,
 		Version:   profile.Version,
@@ -113,6 +116,7 @@ func (h *Handler) UpdateProfileMetadata(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, dto.ProfileResponse{
+		SubjectID: profile.SubjectID,
 		Alias:     profile.Alias,
 		AvatarURL: url,
 		Version:   profile.Version,
@@ -139,6 +143,7 @@ func (h *Handler) DeleteAvatar(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, dto.ProfileResponse{
+		SubjectID: profile.SubjectID,
 		Alias:     profile.Alias,
 		AvatarURL: url,
 		Version:   profile.Version,
@@ -153,6 +158,7 @@ func (h *Handler) DeleteProfile(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, dto.ProfileResponse{
+		SubjectID: profile.SubjectID,
 		Alias:     profile.Alias,
 		AvatarURL: url,
 		Version:   profile.Version,

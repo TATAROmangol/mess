@@ -1,6 +1,7 @@
 package dto
 
 type ProfileResponse struct {
+	SubjectID string `json:"subject_id"`
 	Alias     string `json:"alias"`
 	AvatarURL string `json:"avatar_url"`
 	Version   int    `json:"version"`
