@@ -20,7 +20,7 @@ const (
 	DescSortLabel = "DESC"
 )
 
-func MakeQueryWithGetFilter(ctx context.Context, b sq.SelectBuilder, filter *PaginationFilter) (string, []interface{}, error) {
+func MakeQueryWithPagination(ctx context.Context, b sq.SelectBuilder, filter *PaginationFilter) (string, []interface{}, error) {
 	if filter == nil {
 		return "", nil, fmt.Errorf("invalid pagination")
 	}
