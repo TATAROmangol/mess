@@ -7,7 +7,7 @@ import (
 	sq "github.com/Masterminds/squirrel"
 )
 
-type GetFilter struct {
+type PaginationFilter struct {
 	Limit     int
 	Asc       bool
 	SortLabel string
@@ -20,7 +20,7 @@ const (
 	DescSortLabel = "DESC"
 )
 
-func MakeQueryWithGetFilter(ctx context.Context, b sq.SelectBuilder, filter *GetFilter) (string, []interface{}, error) {
+func MakeQueryWithGetFilter(ctx context.Context, b sq.SelectBuilder, filter *PaginationFilter) (string, []interface{}, error) {
 	if filter == nil {
 		return "", nil, fmt.Errorf("invalid pagination")
 	}
