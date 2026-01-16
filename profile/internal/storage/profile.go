@@ -27,6 +27,16 @@ func (s *Storage) doAndReturnProfile(ctx context.Context, query string, args []i
 	return entity.ToModel(), nil
 }
 
+func (s *Storage) doAndReturnProfiles(ctx context.Context, query string, args []interface{}) ([]*model.Profile, error) {
+	var entities []*ProfileEntity
+	err := sqlx.SelectContext(ctx, s.exec, &entities, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("db get: %w", err)
+	}
+
+	return ProfileEntitiesToModels(entities), nil
+}
+
 func (s *Storage) AddProfile(ctx context.Context, subjID string, alias string) (*model.Profile, error) {
 	query, args, err := sq.
 		Insert(ProfileTable).
@@ -63,46 +73,19 @@ func (s *Storage) GetProfileFromSubjectID(ctx context.Context, subjID string) (*
 	return s.doAndReturnProfile(ctx, query, args)
 }
 
-func (s *Storage) GetProfilesFromAlias(ctx context.Context, size int, asc bool, sortLabel Label, alias string) (string, []*model.Profile, error) {
-	last := postgres.NewLast(ProfileSubjectIDLabel, nil)
-	sort := postgres.NewSort(sortLabel, asc)
-
-	pag := postgres.NewPagination(
-		size,
-		sort,
-		last,
-	)
-
-	return s.getProfilesWithPagination(ctx, pag, alias)
-}
-
-func (s *Storage) GetProfilesFromAliasWithToken(ctx context.Context, token, alias string) (string, []*model.Profile, error) {
-	pag, err := postgres.ParsePaginationToken(token)
-	if err != nil {
-		return "", nil, fmt.Errorf("parse pagination token: %w", err)
-	}
-
-	return s.getProfilesWithPagination(ctx, pag, alias)
-}
-
-func (s *Storage) getProfilesWithPagination(ctx context.Context, pag *postgres.Pagination, alias string) (string, []*model.Profile, error) {
-	builder := sq.
+func (s *Storage) GetProfilesFromAlias(ctx context.Context, alias string, filter *postgres.PaginationFilter) ([]*model.Profile, error) {
+	b := sq.
 		Select(AllLabelsSelect).
 		From(ProfileTable).
 		Where(sq.Like{ProfileAliasLabel: alias + "%"}).
 		Where(sq.Expr(deletedATIsNullProfileFilter))
 
-	newP, entities, err := postgres.MakeQueryWithPagination[*ProfileEntity](
-		ctx,
-		s.db,
-		builder,
-		pag,
-	)
+	query, args, err := postgres.MakeQueryWithPagination(ctx, b, filter)
 	if err != nil {
-		return "", nil, fmt.Errorf("make query with pagination: %w", err)
+		return nil, fmt.Errorf("build sql: %w", err)
 	}
 
-	return newP.Token(), ProfileEntitiesToModels(entities), nil
+	return s.doAndReturnProfiles(ctx, query, args)
 }
 
 func (s *Storage) UpdateProfileMetadata(ctx context.Context, subjectID string, prevVersion int, alias string) (*model.Profile, error) {

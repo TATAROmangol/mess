@@ -10,6 +10,7 @@ import (
 
 	model "github.com/TATAROmangol/mess/profile/internal/model"
 	storage "github.com/TATAROmangol/mess/profile/internal/storage"
+	postgres "github.com/TATAROmangol/mess/shared/postgres"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -97,35 +98,18 @@ func (mr *MockProfileMockRecorder) GetProfileFromSubjectID(ctx, subjID interface
 }
 
 // GetProfilesFromAlias mocks base method.
-func (m *MockProfile) GetProfilesFromAlias(ctx context.Context, size int, asc bool, sortLabel storage.Label, alias string) (string, []*model.Profile, error) {
+func (m *MockProfile) GetProfilesFromAlias(ctx context.Context, alias string, filter *postgres.PaginationFilter) ([]*model.Profile, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetProfilesFromAlias", ctx, size, asc, sortLabel, alias)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].([]*model.Profile)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret := m.ctrl.Call(m, "GetProfilesFromAlias", ctx, alias, filter)
+	ret0, _ := ret[0].([]*model.Profile)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetProfilesFromAlias indicates an expected call of GetProfilesFromAlias.
-func (mr *MockProfileMockRecorder) GetProfilesFromAlias(ctx, size, asc, sortLabel, alias interface{}) *gomock.Call {
+func (mr *MockProfileMockRecorder) GetProfilesFromAlias(ctx, alias, filter interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfilesFromAlias", reflect.TypeOf((*MockProfile)(nil).GetProfilesFromAlias), ctx, size, asc, sortLabel, alias)
-}
-
-// GetProfilesFromAliasWithToken mocks base method.
-func (m *MockProfile) GetProfilesFromAliasWithToken(ctx context.Context, token, alias string) (string, []*model.Profile, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetProfilesFromAliasWithToken", ctx, token, alias)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].([]*model.Profile)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// GetProfilesFromAliasWithToken indicates an expected call of GetProfilesFromAliasWithToken.
-func (mr *MockProfileMockRecorder) GetProfilesFromAliasWithToken(ctx, token, alias interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfilesFromAliasWithToken", reflect.TypeOf((*MockProfile)(nil).GetProfilesFromAliasWithToken), ctx, token, alias)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfilesFromAlias", reflect.TypeOf((*MockProfile)(nil).GetProfilesFromAlias), ctx, alias, filter)
 }
 
 // UpdateAvatarKey mocks base method.

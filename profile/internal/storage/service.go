@@ -14,8 +14,7 @@ type Profile interface {
 	AddProfile(ctx context.Context, subjID string, alias string) (*model.Profile, error)
 
 	GetProfileFromSubjectID(ctx context.Context, subjID string) (*model.Profile, error)
-	GetProfilesFromAlias(ctx context.Context, size int, asc bool, sortLabel Label, alias string) (string, []*model.Profile, error)
-	GetProfilesFromAliasWithToken(ctx context.Context, token, alias string) (string, []*model.Profile, error)
+	GetProfilesFromAlias(ctx context.Context, alias string, filter *postgres.PaginationFilter) ([]*model.Profile, error)
 
 	UpdateProfileMetadata(ctx context.Context, subjectID string, prevVersion int, alias string) (*model.Profile, error)
 	UpdateAvatarKey(ctx context.Context, subjID string, avatarKey string) (*model.Profile, error)

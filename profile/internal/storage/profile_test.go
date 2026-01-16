@@ -8,9 +8,8 @@ import (
 
 	"testing"
 
-	pq "github.com/TATAROmangol/mess/shared/postgres"
-
 	"github.com/TATAROmangol/mess/profile/internal/model"
+	"github.com/TATAROmangol/mess/profile/internal/storage"
 	p "github.com/TATAROmangol/mess/profile/internal/storage"
 	"github.com/TATAROmangol/mess/shared/postgres"
 )
@@ -136,7 +135,7 @@ func TestStorage_UpdateAvatarKey(t *testing.T) {
 	}
 }
 
-func TestStorage_GetProfilesWithPagination_Sort(t *testing.T) {
+func TestStorage_GetProfilesFromAlias_PaginationForward(t *testing.T) {
 	s, err := p.New(CFG)
 	if err != nil {
 		t.Fatalf("could not construct receiver type: %v", err)
@@ -145,64 +144,29 @@ func TestStorage_GetProfilesWithPagination_Sort(t *testing.T) {
 	initData(t)
 	defer cleanupDB(t)
 
-	tests := []struct {
-		name string
-		asc  bool
-		ea   []string
-	}{
-		{
-			name: "asc",
-			asc:  true,
-			ea:   []string{"al", "alias", "alias pro"},
-		},
-		{
-			name: "desc",
-			asc:  false,
-			ea:   []string{"alias pro", "alias", "al"},
-		},
+	filer := postgres.PaginationFilter{
+		Limit:     10,
+		Asc:       true,
+		SortLabel: storage.ProfileAliasLabel,
+		IDLabel:   storage.ProfileSubjectIDLabel,
+		LastID:    &InitProfiles[0].SubjectID,
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			token, res, err := s.Profile().GetProfilesFromAlias(
-				t.Context(),
-				3,
-				tt.asc,
-				p.ProfileAliasLabel,
-				"al",
-			)
-			if err != nil {
-				t.Fatalf("get profiles from alias: %v", err)
-			}
+	profiles, err := s.Profile().GetProfilesFromAlias(t.Context(), "al", &filer)
+	if err != nil {
+		t.Fatalf("get profiles from alias: %v", err)
+	}
 
-			if len(res) != len(tt.ea) {
-				t.Fatalf("expected %d profiles, got %d", len(tt.ea), len(res))
-			}
+	if len(profiles) != 2 {
+		t.Fatalf("not wait len: %v, wait 2", len(profiles))
+	}
 
-			for i, prof := range res {
-				if prof.Alias != tt.ea[i] {
-					t.Errorf(
-						"unexpected alias at index %d: want %q, got %q",
-						i,
-						tt.ea[i],
-						prof.Alias,
-					)
-				}
-			}
-
-			pag, err := pq.ParsePaginationToken(token)
-			if err != nil {
-				t.Fatalf("parse pagination token: %v", err)
-			}
-
-			if pag.Last.Key != nil {
-				t.Fatalf("invalid last val")
-			}
-		})
+	if profiles[1].SubjectID != InitProfiles[2].SubjectID {
+		t.Fatalf("not equal profiles: %v, want %v", profiles[2].SubjectID, InitProfiles[2].SubjectID)
 	}
 }
 
-func TestStorage_GetProfilesWithPagination_Pagination(t *testing.T) {
+func TestStorage_GetProfilesFromAlias_PaginationBack(t *testing.T) {
 	s, err := p.New(CFG)
 	if err != nil {
 		t.Fatalf("could not construct receiver type: %v", err)
@@ -211,45 +175,55 @@ func TestStorage_GetProfilesWithPagination_Pagination(t *testing.T) {
 	initData(t)
 	defer cleanupDB(t)
 
-	alias := "al"
-
-	last := postgres.NewLast(p.ProfileSubjectIDLabel, nil)
-	sort := postgres.NewSort(p.ProfileAliasLabel, true)
-
-	pag := postgres.NewPagination(
-		2,
-		sort,
-		last,
-	)
-
-	token, res, err := s.Profile().GetProfilesFromAliasWithToken(t.Context(), pag.Token(), alias)
-	if len(res) != 2 {
-		t.Fatalf("invalid len res: %v", len(res))
-	}
-	if res[0].SubjectID != InitProfiles[0].SubjectID || res[1].SubjectID != InitProfiles[1].SubjectID {
-		t.Fatalf("invalid res data: %v", res)
+	filer := postgres.PaginationFilter{
+		Limit:     10,
+		Asc:       false,
+		SortLabel: storage.ProfileAliasLabel,
+		IDLabel:   storage.ProfileSubjectIDLabel,
+		LastID:    &InitProfiles[2].SubjectID,
 	}
 
-	nP, err := postgres.ParsePaginationToken(token)
+	profiles, err := s.Profile().GetProfilesFromAlias(t.Context(), "al", &filer)
 	if err != nil {
-		t.Fatalf("parse pagination token: %v", err)
+		t.Fatalf("get profiles from alias: %v", err)
 	}
 
-	token, res, err = s.Profile().GetProfilesFromAliasWithToken(t.Context(), nP.Token(), alias)
-	if len(res) != 1 {
-		t.Fatalf("invalid len res: %v", res)
-	}
-	if res[0].SubjectID != InitProfiles[2].SubjectID {
-		t.Fatalf("invalid res data: %v", res)
+	if len(profiles) != 2 {
+		t.Fatalf("not wait len: %v, wait 2", len(profiles))
 	}
 
-	pag, err = pq.ParsePaginationToken(token)
+	if profiles[1].SubjectID != InitProfiles[0].SubjectID {
+		t.Fatalf("not equal profiles: %v, want %v", profiles[1].SubjectID, InitProfiles[0].SubjectID)
+	}
+}
+
+func TestStorage_GetProfilesFromAlias_WithoutPagination(t *testing.T) {
+	s, err := p.New(CFG)
 	if err != nil {
-		t.Fatalf("parse pagination token: %v", err)
+		t.Fatalf("could not construct receiver type: %v", err)
 	}
 
-	if pag.Last.Key != nil {
-		t.Fatalf("invalid last val")
+	initData(t)
+	defer cleanupDB(t)
+
+	filer := postgres.PaginationFilter{
+		Limit:     10,
+		Asc:       true,
+		SortLabel: storage.ProfileAliasLabel,
+		IDLabel:   storage.ProfileSubjectIDLabel,
+	}
+
+	profiles, err := s.Profile().GetProfilesFromAlias(t.Context(), "al", &filer)
+	if err != nil {
+		t.Fatalf("get profiles from alias: %v", err)
+	}
+
+	if len(profiles) != 3 {
+		t.Fatalf("not wait len: %v, wait 3", len(profiles))
+	}
+
+	if profiles[2].SubjectID != InitProfiles[2].SubjectID {
+		t.Fatalf("not equal profiles: %v, want %v", profiles[2].SubjectID, InitProfiles[2].SubjectID)
 	}
 }
 
@@ -272,17 +246,16 @@ func TestStorage_DeleteProfile(t *testing.T) {
 		t.Fatalf("expected nil profile on delete non-existing, got %+v", prof)
 	}
 
-	_, res, err := s.Profile().GetProfilesFromAlias(t.Context(), 100, true, p.ProfileAliasLabel, "")
-	if err != nil {
+	res, err := s.Profile().GetProfileFromSubjectID(t.Context(), prof.SubjectID)
+	if err != nil && !errors.Is(err, storage.ErrNoRows) {
 		t.Fatalf("get profiles from alias: %v", err)
 	}
-
-	if len(res) == len(InitProfiles) {
-		t.Fatalf("not delete profile")
+	if res != nil {
+		t.Fatalf("not delete profile: %v", res)
 	}
 
 	_, err = s.Profile().DeleteProfile(t.Context(), "not")
-	if err != nil && !errors.Is(err, sql.ErrNoRows){
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		t.Fatalf("delete profile subject id: %v", err)
 	}
 }

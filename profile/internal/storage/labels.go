@@ -4,6 +4,8 @@ const (
 	AllLabelsSelect = "*"
 	ReturningSuffix = "RETURNING *"
 	IsNullLabel     = "IS NULL"
+	AscSortLabel    = "ASC"
+	DescSortLabel   = "DESC"
 )
 
 type Table = string
