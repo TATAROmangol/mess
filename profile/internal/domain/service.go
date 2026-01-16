@@ -6,12 +6,34 @@ import (
 	"github.com/TATAROmangol/mess/profile/internal/adapter/avatar"
 	"github.com/TATAROmangol/mess/profile/internal/model"
 	"github.com/TATAROmangol/mess/profile/internal/storage"
+	"github.com/TATAROmangol/mess/shared/postgres"
 )
+
+type Direction int
+
+const (
+	DirectionUnknown Direction = iota
+	DirectionAfter
+	DirectionBefore
+)
+
+type ProfilePaginationFilter struct {
+	Limit         int
+	LastSubjectID string
+	Direction     Direction
+}
+
+var DefaultPaginationProfile = postgres.PaginationFilter{
+	Limit:     100,
+	Asc:       true,
+	SortLabel: storage.ProfileAliasLabel,
+	IDLabel:   storage.ProfileSubjectIDLabel,
+}
 
 type Service interface {
 	GetCurrentProfile(ctx context.Context) (*model.Profile, string, error)
 	GetProfileFromSubjectID(ctx context.Context, subjID string) (*model.Profile, string, error)
-	GetProfilesFromAlias(ctx context.Context, alias string, size int, token string) (string, []*model.Profile, map[string]string, error)
+	GetProfilesFromAlias(ctx context.Context, alias string, filter *ProfilePaginationFilter) ([]*model.Profile, map[string]string, error)
 
 	AddProfile(ctx context.Context, alias string) (*model.Profile, string, error)
 
@@ -22,12 +44,6 @@ type Service interface {
 	DeleteAvatar(ctx context.Context) (*model.Profile, string, error)
 	DeleteProfile(ctx context.Context) (*model.Profile, string, error)
 }
-
-const (
-	DefaultPageSize = 100
-	Asc             = true
-	SortLabel       = storage.ProfileAliasLabel
-)
 
 type Domain struct {
 	Storage storage.Service

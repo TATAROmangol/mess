@@ -79,19 +79,25 @@ func TestDomain_GetProfilesFromAlias_Success(t *testing.T) {
 		"subj-2": "https://avatar.url/2.png",
 	}
 
+	filter := domain.ProfilePaginationFilter{
+		Direction: domain.DirectionAfter,
+	}
+
+	storageFilter := domain.DefaultPaginationProfile
+	storageFilter.Asc = true
+
 	env := newTestEnv(t)
 	defer env.Finish()
 
 	env.profile.EXPECT().
-		GetProfilesFromAlias(env.ctx, size, domain.Asc, domain.SortLabel, alias).
-		Return("next-token", profiles, nil)
+		GetProfilesFromAlias(env.ctx, alias, &storageFilter).
+		Return(profiles, nil)
 
 	env.avatar.EXPECT().GetAvatarURL(env.ctx, avatar1).Return("https://avatar.url/1.png", nil)
 	env.avatar.EXPECT().GetAvatarURL(env.ctx, avatar2).Return("https://avatar.url/2.png", nil)
 
-	nextToken, profs, avatars, err := env.domain.GetProfilesFromAlias(env.ctx, alias, size, "")
+	profs, avatars, err := env.domain.GetProfilesFromAlias(env.ctx, alias, &filter)
 	require.NoError(t, err)
-	require.Equal(t, "next-token", nextToken)
 	require.Equal(t, profiles, profs)
 	require.Equal(t, avatarsURLS, avatars)
 }
@@ -113,21 +119,27 @@ func TestDomain_GetProfilesFromAlias_Errors(t *testing.T) {
 		"subj-1": "https://avatar.url/1.png",
 	}
 
+	filter := domain.ProfilePaginationFilter{
+		Direction: domain.DirectionAfter,
+	}
+
+	storageFilter := domain.DefaultPaginationProfile
+	storageFilter.Asc = true
+
 	env := newTestEnv(t)
 	defer env.Finish()
 
 	env.profile.EXPECT().
-		GetProfilesFromAlias(env.ctx, size, domain.Asc, domain.SortLabel, alias).
-		Return("next-token", profiles, nil)
+		GetProfilesFromAlias(env.ctx, alias, &storageFilter).
+		Return(profiles, nil)
 
 	env.avatar.EXPECT().GetAvatarURL(env.ctx, avatar1).Return("https://avatar.url/1.png", nil)
 	env.avatar.EXPECT().GetAvatarURL(env.ctx, avatar2).Return("", fmt.Errorf("err"))
 
 	env.lg.EXPECT().Errors(gomock.Any(), gomock.Any())
 
-	nextToken, profs, avatars, err := env.domain.GetProfilesFromAlias(env.ctx, alias, size, "")
+	profs, avatars, err := env.domain.GetProfilesFromAlias(env.ctx, alias, &filter)
 	require.NoError(t, err)
-	require.Equal(t, "next-token", nextToken)
 	require.Equal(t, profiles, profs)
 	require.Equal(t, avatarsURLS, avatars)
 }

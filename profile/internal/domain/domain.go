@@ -42,29 +42,33 @@ func (d *Domain) GetProfileFromSubjectID(ctx context.Context, subjID string) (*m
 	return profile, avatarURL, nil
 }
 
-func (d *Domain) GetProfilesFromAlias(ctx context.Context, alias string, size int, token string) (string, []*model.Profile, map[string]string, error) {
+func (d *Domain) GetProfilesFromAlias(ctx context.Context, alias string, filter *ProfilePaginationFilter) ([]*model.Profile, map[string]string, error) {
 	lg, err := ctxkey.ExtractLogger(ctx)
 	if err != nil {
-		return "", nil, nil, fmt.Errorf("extract logger: %w", err)
+		return nil, nil, fmt.Errorf("extract logger: %w", err)
 	}
 
-	if size == 0 {
-		size = DefaultPageSize
+	storeFiler := DefaultPaginationProfile
+	if filter.Limit != 0 {
+		storeFiler.Limit = filter.Limit
 	}
 
-	var nextToken string
-	var profiles []*model.Profile
+	switch filter.Direction {
+	case DirectionAfter:
+		storeFiler.Asc = true
+	case DirectionBefore:
+		storeFiler.Asc = false
+	default:
+		return nil, nil, fmt.Errorf("unknown direction")
+	}
 
-	if token != "" {
-		nextToken, profiles, err = d.Storage.Profile().GetProfilesFromAliasWithToken(ctx, alias, token)
-		if err != nil {
-			return "", nil, nil, fmt.Errorf("profile get profiles from alias with token: %w", err)
-		}
-	} else {
-		nextToken, profiles, err = d.Storage.Profile().GetProfilesFromAlias(ctx, size, Asc, SortLabel, alias)
-		if err != nil {
-			return "", nil, nil, fmt.Errorf("profile first get profiles from alias: %w", err)
-		}
+	profiles, err := d.Storage.Profile().GetProfilesFromAlias(ctx, alias, &storeFiler)
+	if err != nil {
+		return nil, nil, fmt.Errorf("get profiles from alias: %w", err)
+	}
+
+	if !storeFiler.Asc {
+		reverseProfiles(profiles)
 	}
 
 	avatarsURLS, errors := d.GetAvatarsURL(ctx, profiles)
@@ -72,7 +76,13 @@ func (d *Domain) GetProfilesFromAlias(ctx context.Context, alias string, size in
 		lg.Errors("get avatars url", errors)
 	}
 
-	return nextToken, profiles, avatarsURLS, nil
+	return profiles, avatarsURLS, nil
+}
+
+func reverseProfiles(profiles []*model.Profile) {
+	for i, j := 0, len(profiles)-1; i < j; i, j = i+1, j-1 {
+		profiles[i], profiles[j] = profiles[j], profiles[i]
+	}
 }
 
 func (d *Domain) AddProfile(ctx context.Context, alias string) (*model.Profile, string, error) {
