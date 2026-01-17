@@ -7,12 +7,12 @@ import (
 	sq "github.com/Masterminds/squirrel"
 )
 
-type PaginationFilter struct {
+type PaginationFilter[T comparable] struct {
 	Limit     int
 	Asc       bool
 	SortLabel string
 	IDLabel   string
-	LastID    *any
+	LastID    *T
 }
 
 const (
@@ -20,7 +20,7 @@ const (
 	DescSortLabel = "DESC"
 )
 
-func MakeQueryWithPagination(ctx context.Context, b sq.SelectBuilder, filter *PaginationFilter) (string, []interface{}, error) {
+func MakeQueryWithPagination[T comparable](ctx context.Context, b sq.SelectBuilder, filter *PaginationFilter[T]) (string, []interface{}, error) {
 	if filter == nil {
 		return "", nil, fmt.Errorf("invalid pagination")
 	}
