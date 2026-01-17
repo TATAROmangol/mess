@@ -6,7 +6,6 @@ import (
 	"github.com/TATAROmangol/mess/profile/internal/adapter/avatar"
 	"github.com/TATAROmangol/mess/profile/internal/model"
 	"github.com/TATAROmangol/mess/profile/internal/storage"
-	"github.com/TATAROmangol/mess/shared/postgres"
 )
 
 type Direction int
@@ -23,11 +22,10 @@ type ProfilePaginationFilter struct {
 	Direction     Direction
 }
 
-var DefaultPaginationProfile = postgres.PaginationFilter{
+var DefaultPaginationProfile = storage.ProfilePaginationFilter{
 	Limit:     100,
 	Asc:       true,
 	SortLabel: storage.ProfileAliasLabel,
-	IDLabel:   storage.ProfileSubjectIDLabel,
 }
 
 type Service interface {

@@ -73,14 +73,22 @@ func (s *Storage) GetProfileFromSubjectID(ctx context.Context, subjID string) (*
 	return s.doAndReturnProfile(ctx, query, args)
 }
 
-func (s *Storage) GetProfilesFromAlias(ctx context.Context, alias string, filter *postgres.PaginationFilter) ([]*model.Profile, error) {
+func (s *Storage) GetProfilesFromAlias(ctx context.Context, alias string, filter *ProfilePaginationFilter) ([]*model.Profile, error) {
 	b := sq.
 		Select(AllLabelsSelect).
 		From(ProfileTable).
 		Where(sq.Like{ProfileAliasLabel: alias + "%"}).
 		Where(sq.Expr(deletedATIsNullProfileFilter))
 
-	query, args, err := postgres.MakeQueryWithPagination(ctx, b, filter)
+	storageFilter := &postgres.PaginationFilter[string]{
+		Limit:     filter.Limit,
+		Asc:       filter.Asc,
+		SortLabel: filter.SortLabel,
+		IDLabel:   ProfileSubjectIDLabel,
+		LastID:    filter.LastID,
+	}
+
+	query, args, err := postgres.MakeQueryWithPagination(ctx, b, storageFilter)
 	if err != nil {
 		return nil, fmt.Errorf("build sql: %w", err)
 	}

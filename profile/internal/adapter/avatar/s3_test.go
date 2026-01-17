@@ -22,14 +22,14 @@ func TestMain(m *testing.M) {
 	cfgClient := s3client.Config{
 		Region:          "us-east-1",
 		Endpoint:        "http://localhost:9000",
-		AccessKeyID:     "avatar-backend",
-		SecretAccessKey: "avatar-backend",
+		AccessKeyID:     "profile",
+		SecretAccessKey: "profile-secret",
 		PathStyle:       true,
 	}
 
 	CFG = avatar.Config{
 		Client: cfgClient,
-		Bucket: "avatar-test1",
+		Bucket: "avatar",
 	}
 
 	os.Exit(m.Run())

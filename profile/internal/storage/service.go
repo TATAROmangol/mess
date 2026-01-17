@@ -10,11 +10,18 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+type ProfilePaginationFilter struct {
+	LastID    *string
+	Limit     int
+	Asc       bool
+	SortLabel string
+}
+
 type Profile interface {
 	AddProfile(ctx context.Context, subjID string, alias string) (*model.Profile, error)
 
 	GetProfileFromSubjectID(ctx context.Context, subjID string) (*model.Profile, error)
-	GetProfilesFromAlias(ctx context.Context, alias string, filter *postgres.PaginationFilter) ([]*model.Profile, error)
+	GetProfilesFromAlias(ctx context.Context, alias string, filter *ProfilePaginationFilter) ([]*model.Profile, error)
 
 	UpdateProfileMetadata(ctx context.Context, subjectID string, prevVersion int, alias string) (*model.Profile, error)
 	UpdateAvatarKey(ctx context.Context, subjID string, avatarKey string) (*model.Profile, error)

@@ -11,7 +11,6 @@ import (
 	"github.com/TATAROmangol/mess/profile/internal/model"
 	"github.com/TATAROmangol/mess/profile/internal/storage"
 	p "github.com/TATAROmangol/mess/profile/internal/storage"
-	"github.com/TATAROmangol/mess/shared/postgres"
 )
 
 func TestStorage_AddProfile(t *testing.T) {
@@ -144,11 +143,10 @@ func TestStorage_GetProfilesFromAlias_PaginationForward(t *testing.T) {
 	initData(t)
 	defer cleanupDB(t)
 
-	filer := postgres.PaginationFilter{
+	filer := storage.ProfilePaginationFilter{
 		Limit:     10,
 		Asc:       true,
 		SortLabel: storage.ProfileAliasLabel,
-		IDLabel:   storage.ProfileSubjectIDLabel,
 		LastID:    &InitProfiles[0].SubjectID,
 	}
 
@@ -175,11 +173,10 @@ func TestStorage_GetProfilesFromAlias_PaginationBack(t *testing.T) {
 	initData(t)
 	defer cleanupDB(t)
 
-	filer := postgres.PaginationFilter{
+	filer := storage.ProfilePaginationFilter{
 		Limit:     10,
 		Asc:       false,
 		SortLabel: storage.ProfileAliasLabel,
-		IDLabel:   storage.ProfileSubjectIDLabel,
 		LastID:    &InitProfiles[2].SubjectID,
 	}
 
@@ -206,11 +203,10 @@ func TestStorage_GetProfilesFromAlias_WithoutPagination(t *testing.T) {
 	initData(t)
 	defer cleanupDB(t)
 
-	filer := postgres.PaginationFilter{
+	filer := storage.ProfilePaginationFilter{
 		Limit:     10,
 		Asc:       true,
 		SortLabel: storage.ProfileAliasLabel,
-		IDLabel:   storage.ProfileSubjectIDLabel,
 	}
 
 	profiles, err := s.Profile().GetProfilesFromAlias(t.Context(), "al", &filer)

@@ -10,7 +10,6 @@ import (
 
 	model "github.com/TATAROmangol/mess/profile/internal/model"
 	storage "github.com/TATAROmangol/mess/profile/internal/storage"
-	postgres "github.com/TATAROmangol/mess/shared/postgres"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -98,7 +97,7 @@ func (mr *MockProfileMockRecorder) GetProfileFromSubjectID(ctx, subjID interface
 }
 
 // GetProfilesFromAlias mocks base method.
-func (m *MockProfile) GetProfilesFromAlias(ctx context.Context, alias string, filter *postgres.PaginationFilter) ([]*model.Profile, error) {
+func (m *MockProfile) GetProfilesFromAlias(ctx context.Context, alias string, filter *storage.ProfilePaginationFilter) ([]*model.Profile, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetProfilesFromAlias", ctx, alias, filter)
 	ret0, _ := ret[0].([]*model.Profile)
