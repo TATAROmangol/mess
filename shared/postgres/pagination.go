@@ -12,7 +12,7 @@ type PaginationFilter struct {
 	Asc       bool
 	SortLabel string
 	IDLabel   string
-	LastID    *string
+	LastID    any
 }
 
 const (
