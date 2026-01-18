@@ -10,8 +10,8 @@ github.com/Masterminds/squirrel v1.5.4 h1:uUcX/aBc8O7Fg9kaISIUsHXdKuqehiXAMQTYX8
 github.com/Masterminds/squirrel v1.5.4/go.mod h1:NNaOrjSoIDfDA40n7sr2tPNZRfjzjA400rg+riTZj10=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
-github.com/TATAROmangol/mess/shared v0.0.0-20260117155504-c4c5019fdb03 h1:ITGwkr4jVucxIUuFTFi62f4ZDYnl8rRiWBZR5efrAvw=
-github.com/TATAROmangol/mess/shared v0.0.0-20260117155504-c4c5019fdb03/go.mod h1:CgI/YqTDG4CmfqCyqOAolgPFM3QXqXPCZJB4CllvSMo=
+github.com/TATAROmangol/mess/shared v0.0.0-20260118194552-8221e4758d96 h1:K2IQbAIHcEg5OlSI+wTmGyiMoFP32bsu5XppFmRe5G0=
+github.com/TATAROmangol/mess/shared v0.0.0-20260118194552-8221e4758d96/go.mod h1:CgI/YqTDG4CmfqCyqOAolgPFM3QXqXPCZJB4CllvSMo=
 github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=
 github.com/cenkalti/backoff/v4 v4.3.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
 github.com/containerd/errdefs v1.0.0 h1:tg5yIfIlQIrxYtu9ajqY42W3lpS19XqdxRQeEwYG8PI=

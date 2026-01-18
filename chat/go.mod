@@ -4,7 +4,7 @@ go 1.25.5
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
-	github.com/TATAROmangol/mess/shared v0.0.0-20260117155504-c4c5019fdb03
+	github.com/TATAROmangol/mess/shared v0.0.0-20260118194552-8221e4758d96
 	github.com/jmoiron/sqlx v1.4.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.40.0
 )

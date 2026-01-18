@@ -27,6 +27,7 @@ type LastRead interface {
 
 	GetLastReadsByChatIDs(ctx context.Context, chatIDs []int) ([]*model.LastRead, error)
 	GetLastReadsByChatID(ctx context.Context, chatID int) ([]*model.LastRead, error)
+	GetLastReadBySubjectID(ctx context.Context, subjectID string, chatID int) (*model.LastRead, error)
 
 	UpdateLastRead(ctx context.Context, subjectID string, chatID int, messageID int, messageNumber int) (*model.LastRead, error)
 

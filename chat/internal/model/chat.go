@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 type Chat struct {
 	ID              int
@@ -10,4 +12,14 @@ type Chat struct {
 	UpdatedAt       time.Time
 	CreatedAt       time.Time
 	DeletedAt       *time.Time
+}
+
+func GetChatsID(chats []*Chat) []int {
+	res := make([]int, 0, len(chats))
+
+	for _, c := range chats {
+		res = append(res, c.ID)
+	}
+
+	return res
 }

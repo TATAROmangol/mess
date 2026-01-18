@@ -82,6 +82,22 @@ func (s *Storage) GetLastReadsByChatID(ctx context.Context, chatID int) ([]*mode
 	return s.doAndReturnLastReads(ctx, query, args)
 }
 
+func (s *Storage) GetLastReadBySubjectID(ctx context.Context, subjectID string, chatID int) (*model.LastRead, error) {
+	query, args, err := sq.
+		Select(AllLabelsSelect).
+		From(LastReadTable).
+		Where(sq.Eq{LastReadSubjectIDLabel: subjectID}).
+		Where(sq.Eq{LastReadChatIDLabel: chatID}).
+		Where(sq.Expr(deletedATIsNullLastReadFilter)).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("build sql: %w", err)
+	}
+
+	return s.doAndReturnLastRead(ctx, query, args)
+}
+
 func (s *Storage) UpdateLastRead(ctx context.Context, subjectID string, chatID int, messageID int, messageNumber int) (*model.LastRead, error) {
 	query, args, err := sq.
 		Update(LastReadTable).
