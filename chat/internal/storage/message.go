@@ -55,6 +55,22 @@ func (s *Storage) CreateMessage(ctx context.Context, chatID int, senderSubjectID
 	return s.doAndReturnMessage(ctx, query, args)
 }
 
+func (s *Storage) GetMessageByID(ctx context.Context, messageID int) (*model.Message, error) {
+	query, args, err := sq.
+		Select(AllLabelsSelect).
+		From(MessageTable).
+		Where(sq.Eq{MessageIDLabel: messageID}).
+		Where(sq.Expr(deletedATIsNullMessageFilter)).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
+
+	if err != nil {
+		return nil, fmt.Errorf("build sql: %w", err)
+	}
+
+	return s.doAndReturnMessage(ctx, query, args)
+}
+
 func (s *Storage) GetLastMessagesByChatsID(ctx context.Context, chatsID []int) ([]*model.Message, error) {
 	aliasRowNumber := "rn"
 	subQuery := sq.

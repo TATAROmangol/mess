@@ -98,17 +98,36 @@ func TestStorage_DeleteMessagesChatID(t *testing.T) {
 	defer cleanupDB(t)
 
 	messages, err := s.Message().DeleteMessagesChatID(t.Context(), InitMessages[0].ID)
-	if err != nil{
+	if err != nil {
 		t.Fatalf("delete messages: %v", err)
 	}
 
-	if len(messages) != 2{
+	if len(messages) != 2 {
 		t.Fatalf("wait len 2, have: %v", len(messages))
 	}
 
-	for _, mes := range messages{
-		if mes.DeletedAt == nil{
+	for _, mes := range messages {
+		if mes.DeletedAt == nil {
 			t.Fatalf("not delete: %v", *mes)
 		}
+	}
+}
+
+func TestStorage_GetMessageByID(t *testing.T) {
+	s, err := storage.New(CFG)
+	if err != nil {
+		t.Fatalf("could not construct receiver type: %v", err)
+	}
+
+	initData(t)
+	defer cleanupDB(t)
+
+	mess, err := s.Message().GetMessageByID(t.Context(), InitMessages[0].ID)
+	if err != nil {
+		t.Fatalf("get message by id: %v", err)
+	}
+
+	if mess.ID != InitMessages[0].ID || mess.Content != InitMessages[0].Content {
+		t.Fatalf("not equal, want: %v. have: %v", *InitMessages[0], *mess)
 	}
 }

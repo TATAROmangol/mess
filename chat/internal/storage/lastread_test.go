@@ -70,3 +70,22 @@ func TestStorage_GetLastReadByChatIDs(t *testing.T) {
 		t.Fatalf("wait len 2, have: %v", len(lastReads))
 	}
 }
+
+func TestStorage_GetLastReadByChatID(t *testing.T) {
+	s, err := storage.New(CFG)
+	if err != nil {
+		t.Fatalf("could not construct receiver type: %v", err)
+	}
+
+	initData(t)
+	defer cleanupDB(t)
+
+	lastRead, err := s.LastRead().GetLastReadByChatID(t.Context(), InitLastReads[0].SubjectID, InitLastReads[0].ChatID)
+	if err != nil {
+		t.Fatalf("get last read by chat id: %v", err)
+	}
+
+	if lastRead.ChatID != InitLastReads[0].ChatID || lastRead.SubjectID != InitLastReads[0].SubjectID {
+		t.Fatalf("now equal, want %v, have %v", *InitLastReads[0], *lastRead)
+	}
+}
