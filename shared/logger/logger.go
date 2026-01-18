@@ -9,6 +9,7 @@ type Logger interface {
 	Info(msg string)
 	Error(err error)
 	Errors(msg string, errors []error)
+	Debug(msg string)
 	With(key string, val any) Logger
 }
 
@@ -49,4 +50,8 @@ func (l *log) With(key string, val any) Logger {
 	return &log{
 		lg: l.lg.With(key, val),
 	}
+}
+
+func (l *log) Debug(msg string) {
+	l.lg.Debug(msg)
 }
