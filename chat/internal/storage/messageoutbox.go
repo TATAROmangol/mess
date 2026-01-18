@@ -34,7 +34,7 @@ func (s *Storage) doAndReturnMessageOutboxes(ctx context.Context, query string, 
 	return MessageOutboxEntitiesToModels(entities), nil
 }
 
-func (s *Storage) AddMessageOutbox(ctx context.Context, chatID int, messageID int, operation *model.Operation) (*model.MessageOutbox, error) {
+func (s *Storage) AddMessageOutbox(ctx context.Context, chatID int, messageID int, operation model.Operation) (*model.MessageOutbox, error) {
 	query, args, err := sq.
 		Insert(MessageOutboxTable).
 		Columns(

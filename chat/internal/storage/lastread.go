@@ -68,9 +68,10 @@ func (s *Storage) GetLastReadByChatIDs(ctx context.Context, subjectID string, ch
 	return s.doAndReturnLastReads(ctx, query, args)
 }
 
-func (s *Storage) UpdateLastRead(ctx context.Context, subjectID string, chatID int, messageNumber int) (*model.LastRead, error) {
+func (s *Storage) UpdateLastRead(ctx context.Context, subjectID string, chatID int, messageID int, messageNumber int) (*model.LastRead, error) {
 	query, args, err := sq.
 		Update(LastReadTable).
+		Set(LastReadMessageIDLabel, messageID).
 		Set(LastReadMessageNumberLabel, messageNumber).
 		Set(LastReadUpdatedAtLabel, time.Now().UTC()).
 		Where(sq.Lt{LastReadMessageNumberLabel: messageNumber}).

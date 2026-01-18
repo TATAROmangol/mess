@@ -15,16 +15,16 @@ func TestStorage_UpdateLastRead(t *testing.T) {
 	initData(t)
 	defer cleanupDB(t)
 
-	lastRead, err := s.LastRead().UpdateLastRead(t.Context(), InitLastReads[0].SubjectID, InitLastReads[0].ChatID, 3)
+	lastRead, err := s.LastRead().UpdateLastRead(t.Context(), InitLastReads[0].SubjectID, InitLastReads[0].ChatID, 3, 3)
 	if err != nil {
 		t.Fatalf("update last read: %v", err)
 	}
 
-	if lastRead.MessageNumber != 3 {
-		t.Fatalf("wait number 3, have: %v", lastRead.MessageNumber)
+	if lastRead.MessageNumber != 3 && lastRead.MessageID != 3 {
+		t.Fatalf("wait number 3 and id 3, have: %v", lastRead.MessageNumber)
 	}
 
-	lastRead, err = s.LastRead().UpdateLastRead(t.Context(), InitLastReads[0].SubjectID, InitLastReads[0].ChatID, 2)
+	lastRead, err = s.LastRead().UpdateLastRead(t.Context(), InitLastReads[0].SubjectID, InitLastReads[0].ChatID, 2, 2)
 	if err == nil {
 		t.Fatalf("want err no rows")
 	}
@@ -43,11 +43,11 @@ func TestStorage_DeleteLastRead(t *testing.T) {
 	defer cleanupDB(t)
 
 	lastRead, err := s.LastRead().DeleteLastRead(t.Context(), InitLastReads[0].SubjectID, InitLastReads[0].ChatID)
-	if err != nil{
+	if err != nil {
 		t.Fatalf("delete last read: %v", err)
 	}
 
-	if lastRead.DeletedAt == nil{
+	if lastRead.DeletedAt == nil {
 		t.Fatalf("not delete")
 	}
 }

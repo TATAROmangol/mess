@@ -27,7 +27,7 @@ type LastRead interface {
 
 	GetLastReadByChatIDs(ctx context.Context, subjectID string, chatIDs []int) ([]*model.LastRead, error)
 
-	UpdateLastRead(ctx context.Context, subjectID string, chatID int, messageNumber int) (*model.LastRead, error)
+	UpdateLastRead(ctx context.Context, subjectID string, chatID int, messageID int, messageNumber int) (*model.LastRead, error)
 
 	DeleteLastRead(ctx context.Context, subjectID string, chatID int) (*model.LastRead, error)
 }
@@ -44,7 +44,7 @@ type Message interface {
 }
 
 type MessageOutbox interface {
-	AddMessageOutbox(ctx context.Context, chatID int, messageID int, operation *model.Operation) (*model.MessageOutbox, error)
+	AddMessageOutbox(ctx context.Context, chatID int, messageID int, operation model.Operation) (*model.MessageOutbox, error)
 	GetMessageOutbox(ctx context.Context, limit int) ([]*model.MessageOutbox, error)
 	DeleteMessageOutbox(ctx context.Context, ids []int) ([]*model.MessageOutbox, error)
 }

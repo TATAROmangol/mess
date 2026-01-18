@@ -195,7 +195,7 @@ func initData(t *testing.T) {
 	}
 
 	for _, ms := range InitMessageOutboxes {
-		_, err = s.MessageOutbox().AddMessageOutbox(t.Context(), ms.ChatID, ms.MessageID, &ms.Operation)
+		_, err = s.MessageOutbox().AddMessageOutbox(t.Context(), ms.ChatID, ms.MessageID, ms.Operation)
 		if err != nil {
 			t.Fatalf("create message outbox: %v", err)
 		}
