@@ -61,13 +61,13 @@ func TestStorage_GetLastReadByChatIDs(t *testing.T) {
 	initData(t)
 	defer cleanupDB(t)
 
-	lastReads, err := s.LastRead().GetLastReadByChatIDs(t.Context(), InitLastReads[0].SubjectID, []int{InitLastReads[0].ChatID, InitLastReads[1].ChatID})
+	lastReads, err := s.LastRead().GetLastReadByChatIDs(t.Context(), []int{1, 2})
 	if err != nil {
 		t.Fatalf("get last read by chat ids: %v", err)
 	}
 
-	if len(lastReads) != 2 {
-		t.Fatalf("wait len 2, have: %v", len(lastReads))
+	if len(lastReads) != 4 {
+		t.Fatalf("wait len 4, have: %v", len(lastReads))
 	}
 }
 
@@ -80,12 +80,12 @@ func TestStorage_GetLastReadByChatID(t *testing.T) {
 	initData(t)
 	defer cleanupDB(t)
 
-	lastRead, err := s.LastRead().GetLastReadByChatID(t.Context(), InitLastReads[0].SubjectID, InitLastReads[0].ChatID)
+	lastReads, err := s.LastRead().GetLastReadByChatID(t.Context(), InitLastReads[0].ChatID)
 	if err != nil {
 		t.Fatalf("get last read by chat id: %v", err)
 	}
 
-	if lastRead.ChatID != InitLastReads[0].ChatID || lastRead.SubjectID != InitLastReads[0].SubjectID {
-		t.Fatalf("now equal, want %v, have %v", *InitLastReads[0], *lastRead)
+	if len(lastReads) != 2 {
+		t.Fatalf("wait len 4, have: %v", len(lastReads))
 	}
 }

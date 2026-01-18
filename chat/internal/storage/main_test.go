@@ -38,9 +38,19 @@ var InitLastReads = []*model.LastRead{
 		MessageNumber: 1,
 	},
 	{
+		SubjectID:     "subj-2",
+		ChatID:        1,
+		MessageNumber: 2,
+	},
+	{
 		SubjectID:     "subj-1",
 		ChatID:        2,
 		MessageNumber: 0,
+	},
+	{
+		SubjectID:     "subj-3",
+		ChatID:        2,
+		MessageNumber: 1,
 	},
 }
 
