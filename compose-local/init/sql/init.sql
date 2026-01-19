@@ -7,14 +7,20 @@ BEGIN
    IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'profile') THEN
       CREATE ROLE profile LOGIN PASSWORD 'profile';
    END IF;
+
+   IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'chat') THEN
+      CREATE ROLE chat LOGIN PASSWORD 'chat';
+   END IF;
 END
 $$;
 
 CREATE DATABASE keycloak OWNER keycloak;
 CREATE DATABASE profile OWNER profile;
+CREATE DATABASE chat OWNER chat;
 
 GRANT CONNECT ON DATABASE keycloak TO keycloak;
 GRANT CONNECT ON DATABASE profile TO profile;
+GRANT CONNECT ON DATABASE chat TO chat;
 
 \c keycloak
 ALTER SCHEMA public OWNER TO keycloak;
@@ -39,3 +45,15 @@ GRANT ALL ON TABLES TO profile;
 ALTER DEFAULT PRIVILEGES FOR ROLE profile
 IN SCHEMA public
 GRANT ALL ON SEQUENCES TO profile;
+
+\c profile
+ALTER SCHEMA public OWNER TO chat;
+GRANT USAGE, CREATE ON SCHEMA public TO chat;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE chat
+IN SCHEMA public
+GRANT ALL ON TABLES TO chat;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE chat
+IN SCHEMA public
+GRANT ALL ON SEQUENCES TO chat;

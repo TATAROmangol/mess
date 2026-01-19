@@ -17,4 +17,6 @@ const (
 	Response        = "response"
 	RequestID       = "request_id"
 	StatusResponse  = "status"
+
+	Service = "service"
 )

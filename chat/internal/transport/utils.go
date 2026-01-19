@@ -84,7 +84,7 @@ func MakeMessagePaginationFilter(sLimit string, sBefore string, sAfter string) (
 }
 
 func MakeChatPaginationFilter(sLimit string, sBefore string, sAfter string) (*domain.ChatPaginationFilter, error) {
-	if sBefore == "" && sAfter == "" || sAfter != "" && sBefore != "" {
+	if sAfter != "" && sBefore != "" {
 		return nil, InvalidRequestError
 	}
 

@@ -6,7 +6,8 @@ profile:
     login: main
     password: main
     subject_id: 571e37b5-fdee-4aca-b941-5a26b5b0fb7e
-  delete_profile_url: "http://profile:8080/delete/profile"
-  add_profile_url: "http://profile:8080/add/profile"
+  worker_delay: 30s
+  delete_profile_url: "http://profile:8080/profile"
+  add_profile_url: "http://profile:8080/profile"
   get_profile_url: "http://profile:8080/profile"
-  upload_avatar_url: "http://profile:8080/upload/avatar"
+  upload_avatar_url: "http://profile:8080/avatar"

@@ -1,8 +1,9 @@
 package storage
 
 import (
-	"github.com/TATAROmangol/mess/chat/internal/model"
 	"time"
+
+	"github.com/TATAROmangol/mess/chat/internal/model"
 )
 
 type ChatEntity struct {
@@ -48,6 +49,7 @@ func (e *LastReadEntity) ToModel() *model.LastRead {
 	return &model.LastRead{
 		SubjectID:     e.SubjectID,
 		ChatID:        e.ChatID,
+		MessageID:     e.MessageID,
 		MessageNumber: e.MessageNumber,
 		UpdatedAt:     e.UpdatedAt,
 		DeletedAt:     e.DeletedAt,

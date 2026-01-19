@@ -26,7 +26,7 @@ keycloak:
 
 avatar_deleter:
   run_hour_utc: -1
-  interval: 1m
+  interval: 10m
 
 avatar_uploader:
   kafka:

@@ -1,10 +1,11 @@
 package storage
 
 import (
-	"github.com/TATAROmangol/mess/chat/internal/model"
 	"context"
 	"fmt"
 	"time"
+
+	"github.com/TATAROmangol/mess/chat/internal/model"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jmoiron/sqlx"
@@ -104,7 +105,7 @@ func (s *Storage) UpdateLastRead(ctx context.Context, subjectID string, chatID i
 		Set(LastReadMessageIDLabel, messageID).
 		Set(LastReadMessageNumberLabel, messageNumber).
 		Set(LastReadUpdatedAtLabel, time.Now().UTC()).
-		Where(sq.Lt{LastReadMessageNumberLabel: messageNumber}).
+		Where(sq.Lt{LastReadMessageIDLabel: messageID}).
 		Where(sq.Eq{LastReadSubjectIDLabel: subjectID}).
 		Where(sq.Eq{LastReadChatIDLabel: chatID}).
 		Where(sq.Expr(deletedATIsNullLastReadFilter)).

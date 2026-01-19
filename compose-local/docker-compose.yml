@@ -19,6 +19,7 @@ services:
       - "9000:9000"   
       - "9001:9001"   
     environment:
+      MINIO_SERVER_URL: http://localhost:9000
       MINIO_NOTIFY_KAFKA_ENABLE_avatar-events: "on"
       MINIO_NOTIFY_KAFKA_BROKERS_avatar-events: "kafka:29092"
       MINIO_NOTIFY_KAFKA_TOPIC_avatar-events: "avatar-events"
@@ -110,21 +111,38 @@ services:
       - kafka
     ports:
       - 8080:8080
-
-  e2e:
+    restart: unless-stopped
+  
+  chat:
     build:
-      context: ../e2e/
-      dockerfile: Dockerfile
-    container_name: e2e
+      context: ../chat/
+      dockerfile: dockerfile
+    container_name: chat
     environment:
-      CONFIG: /root/e2e.yaml
+      CONFIG: /root/chat.yaml
     volumes:
-      - ./configs/e2e.yaml:/root/e2e.yaml
+      - ./configs/chat.yaml:/root/chat.yaml
     depends_on:
-      - profile
+      - keycloak
+      - postgres 
+    ports:
+      - 8081:8080
+    restart: unless-stopped
+
+  # e2e:
+  #   build:
+  #     context: ../e2e/
+  #     dockerfile: Dockerfile
+  #   container_name: e2e
+  #   environment:
+  #     CONFIG: /root/e2e.yaml
+  #   volumes:
+  #     - ./configs/e2e.yaml:/root/e2e.yaml
+  #   depends_on:
+  #     - profile
     
 
 volumes:
-  miniodata:
+  miniodata:  
   pqdata:
   localstack-data:
