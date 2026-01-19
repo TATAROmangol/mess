@@ -60,7 +60,7 @@ type LastReadsPair struct {
 	Other *model.LastRead
 }
 
-func (d *Domain) GetChats(ctx context.Context, filter *ChatPaginationFilter) ([]*model.ChatMetadata, error) {
+func (d *Domain) GetChatsMetadata(ctx context.Context, filter *ChatPaginationFilter) ([]*model.ChatMetadata, error) {
 	subj, err := ctxkey.ExtractSubject(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("extract subject: %w", err)
@@ -121,33 +121,46 @@ func (d *Domain) GetChats(ctx context.Context, filter *ChatPaginationFilter) ([]
 			ChatID: chat.ID,
 		}
 
-		mes, ok := lastMessagesMap[chat.ID]
+		lastMessage, ok := lastMessagesMap[chat.ID]
 		if !ok {
 			res = append(res, meta)
 			continue
 		}
 
 		meta.LastMessage = &model.LastMessage{
-			MessageID: mes.ID,
-			Content:   mes.Content,
-			SenderID:  mes.SenderSubjectID,
+			MessageID: lastMessage.ID,
+			Content:   lastMessage.Content,
+			SenderID:  lastMessage.SenderSubjectID,
 		}
 
-		pair := lastReadsMap[chat.ID]
-		if mes.SenderSubjectID == subj.GetSubjectId() {
-			meta.UnreadCount = 0
-			meta.IsLastMessageRead = pair.Other.MessageNumber >= mes.Number
+		lastReadsPair := lastReadsMap[chat.ID]
+		meta.SecondSubjectID = lastReadsPair.Other.SubjectID
+
+		if lastMessage.SenderSubjectID == subj.GetSubjectId() {
+			meta.IsLastMessageRead = lastReadsPair.Other.MessageNumber >= lastMessage.Number
 			res = append(res, meta)
 			continue
 		}
 
-		meta.UnreadCount = chat.MessagesCount - pair.Mine.MessageNumber
-		meta.IsLastMessageRead = true
-
+		meta.UnreadCount = chat.MessagesCount - lastReadsPair.Mine.MessageNumber
 		res = append(res, meta)
 	}
 
 	return res, nil
+}
+
+func (d *Domain) GetChatBySubjectID(ctx context.Context, secondSubjectID string) (*model.Chat, error) {
+	subj, err := ctxkey.ExtractSubject(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("extract subject: %w", err)
+	}
+
+	chat, err := d.Storage.Chat().GetChatIDBySubjects(ctx, subj.GetSubjectId(), secondSubjectID)
+	if err != nil {
+		return nil, fmt.Errorf("get chat by subjects: %w", err)
+	}
+
+	return chat, nil
 }
 
 func (d *Domain) GetLastReads(ctx context.Context, chatID int) ([]*model.LastRead, error) {
@@ -168,13 +181,18 @@ func (d *Domain) GetLastReads(ctx context.Context, chatID int) ([]*model.LastRea
 	return lastReads, err
 }
 
-func (d *Domain) UpdateLastRead(ctx context.Context, chatID int, messageID int, messageNumber int) (*model.LastRead, error) {
+func (d *Domain) UpdateLastRead(ctx context.Context, chatID int, messageID int) (*model.LastRead, error) {
 	subj, err := ctxkey.ExtractSubject(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("extract subject: %w", err)
 	}
 
-	lastRead, err := d.Storage.LastRead().UpdateLastRead(ctx, subj.GetSubjectId(), chatID, messageID, messageNumber)
+	mess, err := d.Storage.Message().GetMessageByID(ctx, messageID)
+	if err != nil {
+		return nil, fmt.Errorf("get message by id: %w", err)
+	}
+
+	lastRead, err := d.Storage.LastRead().UpdateLastRead(ctx, subj.GetSubjectId(), chatID, messageID, mess.Number)
 	if err != nil {
 		return nil, fmt.Errorf("update last read: %w", err)
 	}
@@ -221,7 +239,7 @@ func (d *Domain) GetMessages(ctx context.Context, chatID int, filter *MessagePag
 	return messages, nil
 }
 
-func (d *Domain) GetMessagesToLastRead(ctx context.Context, chatID int) ([]*model.Message, error) {
+func (d *Domain) GetMessagesToLastRead(ctx context.Context, chatID int, limit int) ([]*model.Message, error) {
 	subj, err := ctxkey.ExtractSubject(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("extract subject: %w", err)
@@ -247,6 +265,10 @@ func (d *Domain) GetMessagesToLastRead(ctx context.Context, chatID int) ([]*mode
 	if chat.MessagesCount-lastRead.MessageNumber > filter.Limit {
 		filter.LastID = &lastRead.MessageID
 		filter.Asc = true
+	}
+
+	if limit != 0 {
+		filter.Limit = limit
 	}
 
 	messages, err := d.Storage.Message().GetMessagesByChatID(ctx, chatID, &filter)

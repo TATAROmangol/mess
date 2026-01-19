@@ -24,7 +24,7 @@ type HTTPServer struct {
 }
 
 func NewServer(cfg Config, lg logger.Logger, domain domain.Service, auth auth.Service) *HTTPServer {
-	_ = NewHandler(domain)
+	h := NewHandler(domain)
 
 	if !cfg.DebugMode {
 		gin.SetMode(gin.ReleaseMode)
@@ -36,6 +36,17 @@ func NewServer(cfg Config, lg logger.Logger, domain domain.Service, auth auth.Se
 	r.Use(SetRequestMetadataMiddleware())
 	r.Use(LogResponseMiddleware())
 	r.Use(InitSubjectMiddleware(auth))
+
+	r.GET("/chat/subject/:subject_id", h.GetChatBySubjectID)
+	r.POST("/chat/subject/:subject_id", h.AddChat)
+	r.GET("/chat/:chat_id", h.GetChatByID)
+	r.GET("/chats", h.GetChats)
+
+	r.GET("/messages", h.GetMessages)
+	r.POST("/message", h.AddMessage)
+	r.PATCH("/message", h.UpdateMessage)
+
+	r.PATCH("/lastread", h.UpdateLastRead)
 
 	return &HTTPServer{
 		cfg: &cfg,

@@ -22,7 +22,7 @@ type MessagePaginationFilter struct {
 }
 
 var DefaultPaginationMessage = storage.PaginationFilterIntLastID{
-	Limit:     50,
+	Limit:     30,
 	Asc:       false,
 	SortLabel: storage.MessageCreatedAtLabel,
 }
@@ -41,13 +41,14 @@ var DefaultPaginationChat = storage.PaginationFilterIntLastID{
 
 type Service interface {
 	AddChat(ctx context.Context, secondSubjectID string) (*model.Chat, error)
-	GetChats(ctx context.Context, filter *ChatPaginationFilter) ([]*model.ChatMetadata, error)
+	GetChatsMetadata(ctx context.Context, filter *ChatPaginationFilter) ([]*model.ChatMetadata, error)
+	GetChatBySubjectID(ctx context.Context, secondSubjectID string) (*model.Chat, error)
 
 	GetLastReads(ctx context.Context, chatID int) ([]*model.LastRead, error)
-	UpdateLastRead(ctx context.Context, chatID int, messageID int, messageNumber int) (*model.LastRead, error)
+	UpdateLastRead(ctx context.Context, chatID int, messageID int) (*model.LastRead, error)
 
 	GetMessages(ctx context.Context, chatID int, filter *MessagePaginationFilter) ([]*model.Message, error)
-	GetMessagesToLastRead(ctx context.Context, chatID int) ([]*model.Message, error)
+	GetMessagesToLastRead(ctx context.Context, chatID int, limit int) ([]*model.Message, error)
 	SendMessage(ctx context.Context, chatID int, content string) (*model.Message, error)
 	UpdateMessage(ctx context.Context, messageID int, content string, version int) (*model.Message, error)
 }
