@@ -1,9 +1,10 @@
 package domain
 
 import (
-	"chat/internal/model"
-	"chat/internal/storage"
 	"context"
+
+	"github.com/TATAROmangol/mess/chat/internal/model"
+	"github.com/TATAROmangol/mess/chat/internal/storage"
 )
 
 type Direction int

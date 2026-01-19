@@ -1,8 +1,8 @@
 package storage_test
 
 import (
-	"chat/internal/model"
-	"chat/internal/storage"
+	"github.com/TATAROmangol/mess/chat/internal/model"
+	"github.com/TATAROmangol/mess/chat/internal/storage"
 	"context"
 	"fmt"
 	"os"

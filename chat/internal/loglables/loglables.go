@@ -12,4 +12,9 @@ const (
 	MessageOutbox = "message_outbox"
 
 	Updated = "updated"
+
+	RequestMetadata = "request_metadata"
+	Response        = "response"
+	RequestID       = "request_id"
+	StatusResponse  = "status"
 )

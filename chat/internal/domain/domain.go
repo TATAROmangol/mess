@@ -1,13 +1,14 @@
 package domain
 
 import (
-	"chat/internal/ctxkey"
-	loglables "chat/internal/loglabels"
-	"chat/internal/model"
-	"chat/internal/storage"
 	"context"
 	"errors"
 	"fmt"
+
+	"github.com/TATAROmangol/mess/chat/internal/ctxkey"
+	loglables "github.com/TATAROmangol/mess/chat/internal/loglables"
+	"github.com/TATAROmangol/mess/chat/internal/model"
+	"github.com/TATAROmangol/mess/chat/internal/storage"
 
 	"github.com/TATAROmangol/mess/shared/utils"
 )

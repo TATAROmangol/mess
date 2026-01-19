@@ -1,7 +1,7 @@
 package storage
 
 import (
-	"chat/internal/model"
+	"github.com/TATAROmangol/mess/chat/internal/model"
 	"time"
 )
 

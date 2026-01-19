@@ -1,10 +1,11 @@
 package storage
 
 import (
-	"chat/internal/model"
 	"context"
 	"database/sql"
 	"fmt"
+
+	"github.com/TATAROmangol/mess/chat/internal/model"
 
 	"github.com/TATAROmangol/mess/shared/postgres"
 	"github.com/jmoiron/sqlx"
