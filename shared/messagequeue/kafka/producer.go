@@ -21,10 +21,10 @@ type Producer struct {
 func NewProducer(cfg ProducerConfig) messagequeue.Producer {
 	return &Producer{
 		writer: &kafka.Writer{
-			Addr:                   kafka.TCP(cfg.Brokers...),
-			Topic:                  cfg.Topic,
-			Balancer:               &kafka.Hash{},
-			RequiredAcks:           kafka.RequireAll,
+			Addr:  kafka.TCP(cfg.Brokers...),
+			Topic: cfg.Topic,
+			// Balancer:               &kafka.Hash{},
+			// RequiredAcks:           kafka.RequireAll,
 			AllowAutoTopicCreation: cfg.TopicAutoCreate,
 		},
 	}
