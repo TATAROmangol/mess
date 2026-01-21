@@ -22,4 +22,5 @@ type Consumer interface {
 type Producer interface {
 	Publish(ctx context.Context, pair *KeyValPair) error
 	BatchPublish(ctx context.Context, pairs []*KeyValPair) error
+	Close() error
 }
