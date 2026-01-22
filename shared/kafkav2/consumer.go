@@ -3,6 +3,7 @@ package kafkav2
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"sync"
 
 	"github.com/IBM/sarama"
@@ -55,6 +56,7 @@ func (c *Consumer) Start(ctx context.Context) error {
 	}
 
 	for _, partition := range partitions {
+		slog.Info("start partioning")
 		pc, err := c.consumer.ConsumePartition(c.cfg.Topic, partition, sarama.OffsetOldest)
 		if err != nil {
 			return fmt.Errorf("failed to consume partition %d: %w", partition, err)
