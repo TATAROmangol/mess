@@ -1,4 +1,4 @@
-package ws
+package wsdto
 
 import (
 	"encoding/json"
