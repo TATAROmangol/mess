@@ -66,7 +66,7 @@ func (c *Consumer) Start(ctx context.Context) error {
 		}
 
 		c.wg.Add(1)
-		go func(pc sarama.PartitionConsumer, partition int32) {
+		go func() {
 			defer c.wg.Done()
 			for {
 				select {
@@ -79,7 +79,7 @@ func (c *Consumer) Start(ctx context.Context) error {
 					return
 				}
 			}
-		}(pc, partition)
+		}()
 	}
 
 	go func() {
