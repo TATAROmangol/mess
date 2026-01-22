@@ -27,7 +27,7 @@ type Producer struct {
 func NewProducer(cfg ProducerConfig) (*Producer, error) {
 	saramaCfg := sarama.NewConfig()
 	saramaCfg.Producer.Return.Successes = true
-	saramaCfg.Producer.RequiredAcks = sarama.WaitForAll
+	saramaCfg.Producer.RequiredAcks = sarama.NoResponse
 	saramaCfg.Producer.Retry.Max = cfg.Retry
 	saramaCfg.Producer.Timeout = cfg.Timeout
 
