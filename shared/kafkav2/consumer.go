@@ -30,7 +30,7 @@ type Consumer struct {
 
 func NewConsumer(cfg ConsumerConfig) (*Consumer, error) {
 	config := sarama.NewConfig()
-	config.Consumer.Offsets.Initial = sarama.OffsetNewest
+	config.Consumer.Offsets.Initial = sarama.OffsetOldest
 
 	consumer, err := sarama.NewConsumer(cfg.Brokers, config)
 	if err != nil {
