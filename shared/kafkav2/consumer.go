@@ -69,6 +69,7 @@ func (c *Consumer) Start(ctx context.Context) error {
 				select {
 				case msg := <-pc.Messages():
 					slog.Info("halo")
+					slog.Info(fmt.Sprintf("%v", partition))
 					c.msgCh <- &ConsumerMessage{
 						Value: msg.Value,
 					}
