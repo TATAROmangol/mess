@@ -1,7 +1,6 @@
 package kafkav2
 
 import (
-	"context"
 	"time"
 
 	"github.com/IBM/sarama"
@@ -43,7 +42,7 @@ func NewProducer(cfg ProducerConfig) (*Producer, error) {
 	}, nil
 }
 
-func (p *Producer) Publish(ctx context.Context, pairs []*KeyValPair) error {
+func (p *Producer) Publish(pairs []*KeyValPair) error {
 	var saramaMsgs []*sarama.ProducerMessage
 	for _, pair := range pairs {
 		saramaMsgs = append(saramaMsgs, &sarama.ProducerMessage{
