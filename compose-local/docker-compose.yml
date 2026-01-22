@@ -131,6 +131,22 @@ services:
     ports:
       - 8081:8080
     restart: unless-stopped
+  
+  ws:
+    build:
+      context: ../websocket/
+      dockerfile: dockerfile
+    container_name: ws
+    environment:
+      CONFIG: /root/ws.yaml
+    volumes:
+      - ./configs/ws.yaml:/root/ws.yaml
+    depends_on:
+      - keycloak
+      - kafka
+    ports:
+      - 8082:8080
+    restart: unless-stopped
 
   # e2e:
   #   build:

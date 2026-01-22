@@ -1,0 +1,22 @@
+keycloak:
+  jwks_endpoint: http://keycloak:8080/realms/main/protocol/openid-connect/certs
+
+http: 
+  host: 0.0.0.0 
+  port: 8080
+
+message_worker:
+  kafka_consumer:
+    brokers:
+    - kafka:29092
+    topic: message-event 
+    messages_limit: 10
+
+ws_config:
+  read_buffer_size_bytes: 1024
+  write_buffer_size_bytes: 1024
+  client:
+    message_buffer: 10
+    write_timeout: 30s
+    read_timeout: 30s
+    ping_timeout: 20s

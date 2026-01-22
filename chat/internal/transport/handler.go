@@ -8,7 +8,7 @@ import (
 
 	"github.com/TATAROmangol/mess/chat/internal/ctxkey"
 	"github.com/TATAROmangol/mess/chat/internal/domain"
-	"github.com/TATAROmangol/mess/chat/pkg/httpdto"
+	httpdto "github.com/TATAROmangol/mess/shared/dto/http"
 	"github.com/gin-gonic/gin"
 )
 

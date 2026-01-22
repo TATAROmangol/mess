@@ -4,23 +4,20 @@ import (
 	"net/http"
 
 	"github.com/TATAROmangol/mess/websocket/internal/ctxkey"
-	"github.com/TATAROmangol/mess/websocket/internal/model"
 	"github.com/gorilla/websocket"
 )
 
 type Handler struct {
-	cfg      HandlerConfig
+	cfg      WSHandlerConfig
 	hub      *Hub
 	upgrader *websocket.Upgrader
 }
 
-func NewHandler(cfg HandlerConfig, messageChan chan *model.Message) *Handler {
+func NewHandler(cfg WSHandlerConfig, hub *Hub) *Handler {
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  cfg.ReadBufferSizeBytes,
 		WriteBufferSize: cfg.WriteBufferSizeBytes,
 	}
-
-	hub := NewHub(messageChan)
 
 	return &Handler{
 		cfg:      cfg,

@@ -5,7 +5,7 @@ import (
 
 	"github.com/TATAROmangol/mess/chat/internal/domain"
 	"github.com/TATAROmangol/mess/chat/internal/model"
-	"github.com/TATAROmangol/mess/chat/pkg/httpdto"
+	httpdto "github.com/TATAROmangol/mess/shared/dto/http"
 )
 
 func MessageModelToMessageDTO(mess *model.Message) *httpdto.MessageResponse {

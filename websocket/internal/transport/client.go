@@ -1,9 +1,10 @@
 package transport
 
 import (
-	"log"
+	"fmt"
 	"time"
 
+	wsdto "github.com/TATAROmangol/mess/shared/dto/ws"
 	"github.com/gorilla/websocket"
 )
 
@@ -13,7 +14,7 @@ var (
 
 type Client struct {
 	SubjectID string
-	Send      chan []byte
+	Send      chan *wsdto.WSMessage
 	cfg       ClientConfig
 	hub       *Hub
 	conn      *websocket.Conn
@@ -22,7 +23,7 @@ type Client struct {
 func NewClient(subjectID string, conn *websocket.Conn, cfg ClientConfig, hub *Hub) *Client {
 	return &Client{
 		SubjectID: subjectID,
-		Send:      make(chan []byte, cfg.MessageBuffer),
+		Send:      make(chan *wsdto.WSMessage, cfg.MessageBuffer),
 		cfg:       cfg,
 		hub:       hub,
 		conn:      conn,
@@ -36,17 +37,30 @@ func (c *Client) readPump() {
 	}()
 
 	c.conn.SetReadDeadline(time.Now().Add(c.cfg.ReadTimeout))
+	c.conn.SetPongHandler(func(string) error {
+		c.conn.SetReadDeadline(time.Now().Add(c.cfg.ReadTimeout))
+		return nil
+	})
+
 	for {
-		_, message, err := c.conn.ReadMessage()
+		mt, message, err := c.conn.ReadMessage()
 		if err != nil {
 			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				log.Printf("error: %v", err)
+				c.sendError(err)
 			}
+			break
+		}
+
+		if mt == websocket.CloseMessage {
 			break
 		}
 
 		_ = message
 	}
+}
+
+func (c *Client) sendError(err error) {
+	c.hub.lg.Error(fmt.Errorf("subj: %v, err: %w", c.SubjectID, err))
 }
 
 func (c *Client) writePump() {
@@ -67,23 +81,37 @@ func (c *Client) writePump() {
 
 			w, err := c.conn.NextWriter(websocket.TextMessage)
 			if err != nil {
+				c.sendError(err)
 				return
 			}
-			w.Write(message)
+			msg, err := message.GetBytes()
+			if err != nil {
+				c.sendError(err)
+				return
+			}
+
+			w.Write(msg)
 
 			// Add queued chat messages to the current websocket message.
 			n := len(c.Send)
 			for i := 0; i < n; i++ {
 				w.Write(newline)
-				w.Write(<-c.Send)
+				msg, err := (<-c.Send).GetBytes()
+				if err != nil {
+					c.sendError(err)
+					return
+				}
+				w.Write(msg)
 			}
 
 			if err := w.Close(); err != nil {
+				c.sendError(err)
 				return
 			}
 		case <-ticker.C:
 			c.conn.SetWriteDeadline(time.Now().Add(c.cfg.WriteTimeout))
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
+				c.sendError(err)
 				return
 			}
 		}

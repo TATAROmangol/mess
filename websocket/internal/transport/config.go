@@ -9,7 +9,7 @@ type ClientConfig struct {
 	PingPeriod    time.Duration `yaml:"ping_timeout"`
 }
 
-type HandlerConfig struct {
+type WSHandlerConfig struct {
 	ReadBufferSizeBytes  int          `yaml:"read_buffer_size_bytes"`
 	WriteBufferSizeBytes int          `yaml:"write_buffer_size_bytes"`
 	ClientConfig         ClientConfig `yaml:"client"`

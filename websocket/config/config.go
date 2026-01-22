@@ -5,10 +5,17 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/TATAROmangol/mess/shared/auth/keycloak"
+	"github.com/TATAROmangol/mess/websocket/internal/transport"
+	"github.com/TATAROmangol/mess/websocket/internal/worker"
 	"github.com/goccy/go-yaml"
 )
 
 type Config struct {
+	Keycloak      keycloak.Config            `yaml:"keycloak"`
+	MessageWorker worker.MessageWorkerConfig `yaml:"message_worker"`
+	HTTP          transport.HTTPConfig       `yaml:"http"`
+	WSConfig      transport.WSHandlerConfig  `yaml:"ws_config"`
 }
 
 func LoadConfig() (*Config, error) {

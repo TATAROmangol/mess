@@ -1,7 +1,8 @@
 package transport
 
 import (
-	"log"
+	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/TATAROmangol/mess/shared/auth"
@@ -10,29 +11,42 @@ import (
 )
 
 type Server struct {
+	cfg         HTTPConfig
 	Router      *mux.Router
 	AuthService auth.Service
 	Logger      logger.Logger
+	httpServer  *http.Server
 }
 
-func NewServer(authService auth.Service, lg logger.Logger, handler *Handler) *Server {
+func NewServer(cfg HTTPConfig, authService auth.Service, handler *Handler) *Server {
+	r := mux.NewRouter()
+
 	s := &Server{
-		Router:      mux.NewRouter(),
+		cfg:         cfg,
+		Router:      r,
 		AuthService: authService,
-		Logger:      lg,
 	}
 
-	s.Router.Use(LoggerMiddleware(lg))
-	s.Router.Use(RequestMetadataMiddleware())
-	s.Router.Use(LogResponseMiddleware())
-	s.Router.Use(SubjectMiddleware(authService))
+	r.Use(SubjectMiddleware(authService))
+
+	// WS endpoint
+	r.HandleFunc("/ws", handler.WSHandler)
+
+	s.httpServer = &http.Server{
+		Addr:    fmt.Sprintf("%v:%v", cfg.Host, cfg.Port),
+		Handler: r,
+	}
 
 	return s
 }
 
-func (s *Server) Run(addr string) {
-	log.Printf("server running at %s", addr)
-	if err := http.ListenAndServe(addr, s.Router); err != nil {
-		log.Fatalf("server failed: %v", err)
+func (s *Server) Run() error {
+	if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		return err
 	}
+	return nil
+}
+
+func (s *Server) Stop(ctx context.Context) error {
+	return s.httpServer.Shutdown(ctx)
 }

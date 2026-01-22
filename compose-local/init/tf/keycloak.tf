@@ -16,6 +16,7 @@ resource "keycloak_openid_client" "client-main" {
   access_type = "CONFIDENTIAL"
   standard_flow_enabled = true
   direct_access_grants_enabled = true
+  service_accounts_enabled = true
 
   valid_redirect_uris = [
     "*"
@@ -35,6 +36,21 @@ resource "keycloak_user" "user" {
 
   initial_password {
     value     = "main"
+    temporary = false
+  }
+}
+resource "keycloak_user" "user-2" {
+  realm_id = keycloak_realm.realm-main.id
+
+  username = "test"
+  enabled  = true
+
+  first_name = "test"
+  last_name  = "test"
+  email      = "test@test.test"
+
+  initial_password {
+    value     = "test"
     temporary = false
   }
 }

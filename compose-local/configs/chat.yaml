@@ -17,7 +17,7 @@ http:
 migrations_path: file://migrations
 
 message_worker:
-  kafka: 
+  kafka_producer: 
     brokers: 
     - kafka:29092 
     topic: message-event 

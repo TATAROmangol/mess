@@ -10,13 +10,13 @@ import (
 	"github.com/TATAROmangol/mess/chat/internal/loglables"
 	"github.com/TATAROmangol/mess/chat/internal/model"
 	"github.com/TATAROmangol/mess/chat/internal/storage"
-	"github.com/TATAROmangol/mess/chat/pkg/event"
+	mqdto "github.com/TATAROmangol/mess/shared/dto/mq"
 	"github.com/TATAROmangol/mess/shared/kafkav2"
 	"github.com/TATAROmangol/mess/shared/logger"
 )
 
 type MessageWorkerConfig struct {
-	Kafka         kafkav2.ProducerConfig `yaml:"kafka"`
+	Kafka         kafkav2.ProducerConfig `yaml:"kafka_producer"`
 	Delay         time.Duration          `yaml:"delay"`
 	UsersLimit    int                    `yaml:"users_limit"`
 	MessagesLimit int                    `yaml:"messages_limit"`
@@ -82,10 +82,10 @@ func (mw *MessageWorker) Send(ctx context.Context) ([]int, error) {
 
 		ids = append(ids, out.ID)
 
-		sendMessage := event.SendMessage{
+		sendMessage := mqdto.SendMessage{
 			ChatID:      mess.ChatID,
 			RecipientID: out.RecipientID,
-			Message: &event.Message{
+			Message: &mqdto.Message{
 				ID:        mess.ID,
 				SenderID:  mess.SenderSubjectID,
 				Version:   mess.Version,
@@ -95,9 +95,9 @@ func (mw *MessageWorker) Send(ctx context.Context) ([]int, error) {
 		}
 
 		if out.Operation == model.AddOperation {
-			sendMessage.Operation = event.AddOperation
+			sendMessage.Operation = mqdto.AddOperation
 		} else {
-			sendMessage.Operation = event.UpdateOperation
+			sendMessage.Operation = mqdto.UpdateOperation
 		}
 
 		val, err := json.Marshal(sendMessage)
