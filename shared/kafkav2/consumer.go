@@ -10,19 +10,16 @@ import (
 
 type ConsumerConfig struct {
 	Brokers       []string `yaml:"brokers"`
-	Topics        []string `yaml:"topics"`
+	Topic         string   `yaml:"topic"`
 	MessagesLimit int      `yaml:"messages_limit"`
 }
 
 type ConsumerMessage struct {
-	Value     []byte
-	partition int32
-	offset    int64
+	Value []byte
 }
 
 type Consumer struct {
-	brokers []string
-	topic   string
+	cfg ConsumerConfig
 
 	client   sarama.Client
 	consumer sarama.Consumer
@@ -31,11 +28,11 @@ type Consumer struct {
 	wg    sync.WaitGroup
 }
 
-func NewConsumer(brokers []string, topic string) (*Consumer, error) {
+func NewConsumer(cfg ConsumerConfig) (*Consumer, error) {
 	config := sarama.NewConfig()
 	config.Consumer.Offsets.Initial = sarama.OffsetNewest
 
-	client, err := sarama.NewClient(brokers, config)
+	client, err := sarama.NewClient(cfg.Brokers, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create client: %w", err)
 	}
@@ -46,8 +43,7 @@ func NewConsumer(brokers []string, topic string) (*Consumer, error) {
 	}
 
 	return &Consumer{
-		brokers:  brokers,
-		topic:    topic,
+		cfg:      cfg,
 		client:   client,
 		consumer: consumer,
 		msgCh:    make(chan *ConsumerMessage),
@@ -55,13 +51,13 @@ func NewConsumer(brokers []string, topic string) (*Consumer, error) {
 }
 
 func (c *Consumer) Start(ctx context.Context) error {
-	partitions, err := c.consumer.Partitions(c.topic)
+	partitions, err := c.consumer.Partitions(c.cfg.Topic)
 	if err != nil {
 		return fmt.Errorf("failed to get partitions: %w", err)
 	}
 
 	for _, partition := range partitions {
-		pc, err := c.consumer.ConsumePartition(c.topic, partition, sarama.OffsetNewest)
+		pc, err := c.consumer.ConsumePartition(c.cfg.Topic, partition, sarama.OffsetNewest)
 		if err != nil {
 			return fmt.Errorf("failed to consume partition %d: %w", partition, err)
 		}
@@ -73,9 +69,7 @@ func (c *Consumer) Start(ctx context.Context) error {
 				select {
 				case msg := <-pc.Messages():
 					c.msgCh <- &ConsumerMessage{
-						Value:     msg.Value,
-						partition: msg.Partition,
-						offset:    msg.Offset,
+						Value: msg.Value,
 					}
 				case <-ctx.Done():
 					pc.Close()
