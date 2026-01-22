@@ -54,7 +54,7 @@ func NewPartitionConsumer(brokers []string, topic string) (*PartitionConsumer, e
 	}, nil
 }
 
-func (c *PartitionConsumer) Run(ctx context.Context) error {
+func (c *PartitionConsumer) Start(ctx context.Context) error {
 	partitions, err := c.consumer.Partitions(c.topic)
 	if err != nil {
 		return fmt.Errorf("failed to get partitions: %w", err)

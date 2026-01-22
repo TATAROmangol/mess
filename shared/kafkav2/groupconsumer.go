@@ -75,7 +75,7 @@ func NewConsumer(cfg GroupConsumerConfig) (*GroupConsumer, error) {
 	}, nil
 }
 
-func (c *GroupConsumer) Start(ctx context.Context) error {
+func (c *GroupConsumer) Run(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	c.cancel = cancel
 	c.done = make(chan struct{})
