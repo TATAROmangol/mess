@@ -3,7 +3,6 @@ package kafkav2
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"sync"
 
 	"github.com/IBM/sarama"
@@ -31,7 +30,7 @@ type Consumer struct {
 
 func NewConsumer(cfg ConsumerConfig) (*Consumer, error) {
 	config := sarama.NewConfig()
-	config.Consumer.Offsets.Initial = sarama.OffsetOldest
+	config.Consumer.Offsets.Initial = sarama.OffsetNewest
 
 	consumer, err := sarama.NewConsumer(cfg.Brokers, config)
 	if err != nil {
@@ -56,8 +55,7 @@ func (c *Consumer) Start(ctx context.Context) error {
 	}
 
 	for _, partition := range partitions {
-		slog.Info("start partioning")
-		pc, err := c.consumer.ConsumePartition(c.cfg.Topic, partition, sarama.OffsetOldest)
+		pc, err := c.consumer.ConsumePartition(c.cfg.Topic, partition, sarama.OffsetNewest)
 		if err != nil {
 			return fmt.Errorf("failed to consume partition %d: %w", partition, err)
 		}
@@ -68,12 +66,9 @@ func (c *Consumer) Start(ctx context.Context) error {
 			for {
 				select {
 				case msg := <-pc.Messages():
-					slog.Info("halo")
-					slog.Info(fmt.Sprintf("%v", partition))
 					c.msgCh <- &ConsumerMessage{
 						Value: msg.Value,
 					}
-					slog.Info(string(msg.Value))
 				case <-ctx.Done():
 					pc.Close()
 					return
