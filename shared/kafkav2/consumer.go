@@ -21,31 +21,26 @@ type ConsumerMessage struct {
 type Consumer struct {
 	cfg ConsumerConfig
 
-	client   sarama.Client
 	consumer sarama.Consumer
 
-	msgCh chan *ConsumerMessage
-	wg    sync.WaitGroup
+	errorsCh chan error
+	msgCh    chan *ConsumerMessage
+	wg       sync.WaitGroup
 }
 
 func NewConsumer(cfg ConsumerConfig) (*Consumer, error) {
 	config := sarama.NewConfig()
 	config.Consumer.Offsets.Initial = sarama.OffsetNewest
 
-	client, err := sarama.NewClient(cfg.Brokers, config)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create client: %w", err)
-	}
-
-	consumer, err := sarama.NewConsumerFromClient(client)
+	consumer, err := sarama.NewConsumer(cfg.Brokers, config)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create consumer: %w", err)
 	}
 
 	return &Consumer{
 		cfg:      cfg,
-		client:   client,
 		consumer: consumer,
+		errorsCh: make(chan error),
 		msgCh:    make(chan *ConsumerMessage),
 	}, nil
 }
@@ -80,6 +75,12 @@ func (c *Consumer) Start(ctx context.Context) error {
 				}
 			}
 		}()
+
+		go func() {
+			for err := range pc.Errors() {
+				c.errorsCh <- err
+			}
+		}()
 	}
 
 	go func() {
@@ -94,9 +95,10 @@ func (c *Consumer) GetMessagesChan() chan *ConsumerMessage {
 	return c.msgCh
 }
 
+func (c *Consumer) GetErrorsChan() chan error {
+	return c.errorsCh
+}
+
 func (c *Consumer) Close() error {
-	if err := c.consumer.Close(); err != nil {
-		return err
-	}
-	return c.client.Close()
+	return c.consumer.Close()
 }
