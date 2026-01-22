@@ -73,6 +73,7 @@ func (c *Consumer) Start(ctx context.Context) error {
 					c.msgCh <- &ConsumerMessage{
 						Value: msg.Value,
 					}
+					slog.Info(string(msg.Value))
 				case <-ctx.Done():
 					pc.Close()
 					return
