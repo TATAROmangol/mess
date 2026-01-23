@@ -39,7 +39,7 @@ func (s *Storage) AddMessageOutbox(ctx context.Context, recipientID string, mess
 	query, args, err := sq.
 		Insert(MessageOutboxTable).
 		Columns(
-			MessageOutboxRecipientID,
+			MessageOutboxRecipientIDLabel,
 			MessageOutboxMessageIDLabel,
 			MessageOutboxOperationLabel,
 		).
@@ -60,7 +60,7 @@ func (s *Storage) GetMessageOutbox(ctx context.Context, limitUsers int, limitMes
 		Select(AllLabelsSelect).
 		From(MessageOutboxTable).
 		Where(sq.Expr(deletedATIsNullMessageOutboxFilter)).
-		OrderBy(MessageOutboxRecipientID).
+		OrderBy(MessageOutboxRecipientIDLabel).
 		Limit(uint64(limitUsers)).
 		Suffix(SkipLocked).
 		PlaceholderFormat(sq.Dollar).
@@ -86,7 +86,7 @@ func (s *Storage) GetMessageOutbox(ctx context.Context, limitUsers int, limitMes
 	query2, args2, err := sq.
 		Select(AllLabelsSelect).
 		From(MessageOutboxTable).
-		Where(sq.Eq{MessageOutboxRecipientID: recipientIDs}).
+		Where(sq.Eq{MessageOutboxRecipientIDLabel: recipientIDs}).
 		Where(sq.Expr(deletedATIsNullMessageOutboxFilter)).
 		Limit(uint64(limitMessages)).
 		PlaceholderFormat(sq.Dollar).

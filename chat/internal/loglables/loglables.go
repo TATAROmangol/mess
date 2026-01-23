@@ -21,4 +21,6 @@ const (
 	Service = "service"
 
 	IDs = "ids"
+
+	SubjectID = "subject_id"
 )

@@ -123,3 +123,31 @@ func MessageOutboxEntitiesToModels(entities []*MessageOutboxEntity) []*model.Mes
 	}
 	return models
 }
+
+type LastReadOutboxEntity struct {
+	ID          int        `db:"id"`
+	RecipientID string     `db:"recipient_id"`
+	ChatID      int        `db:"chat_id"`
+	SubjectID   string     `db:"subject_id"`
+	MessageID   int        `db:"message_id"`
+	DeletedAt   *time.Time `db:"deleted_at"`
+}
+
+func (e *LastReadOutboxEntity) ToModel() *model.LastReadOutbox {
+	return &model.LastReadOutbox{
+		ID:          e.ID,
+		RecipientID: e.RecipientID,
+		ChatID:      e.ChatID,
+		SubjectID:   e.SubjectID,
+		MessageID:   e.MessageID,
+		DeletedAt:   e.DeletedAt,
+	}
+}
+
+func LastReadOutboxEntityToModels(entities []*LastReadOutboxEntity) []*model.LastReadOutbox {
+	models := make([]*model.LastReadOutbox, 0, len(entities))
+	for _, entity := range entities {
+		models = append(models, entity.ToModel())
+	}
+	return models
+}

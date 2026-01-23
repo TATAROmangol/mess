@@ -23,3 +23,14 @@ func GetChatsID(chats []*Chat) []int {
 
 	return res
 }
+
+func (c *Chat) GetSecondSubject(subj string) string {
+	var recipient string
+	if c.FirstSubjectID != subj {
+		recipient = c.FirstSubjectID
+	} else {
+		recipient = c.SecondSubjectID
+	}
+
+	return recipient
+}

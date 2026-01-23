@@ -74,6 +74,14 @@ func main() {
 	}
 	go messageWorker.Run(ctx)
 
+	lastreadWorkerLg := lg.With(loglables.Service, "lastread worker")
+	lastreadWorker, err := worker.NewLastReadWorker(storage, lastreadWorkerLg, &cfg.LastReadWorker)
+	if err != nil {
+		lg.Error(fmt.Errorf("new lastread worker: %w", err))
+		return
+	}
+	go lastreadWorker.Run(ctx)
+
 	server := transport.NewServer(cfg.HTTP, lg, dom, keycloak)
 	go func() {
 		if err := server.Run(); err != nil && !errors.Is(http.ErrServerClosed, err) {

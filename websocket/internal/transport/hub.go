@@ -7,19 +7,23 @@ import (
 )
 
 type Hub struct {
-	lg          logger.Logger
-	clients     map[string]*Client
-	register    chan *Client
-	unregister  chan *Client
+	lg logger.Logger
+
+	clients    map[string]*Client
+	register   chan *Client
+	unregister chan *Client
+
 	messageChan chan *model.Message
 }
 
 func NewHub(messageChan chan *model.Message, lg logger.Logger) *Hub {
 	return &Hub{
-		lg:          lg,
-		clients:     make(map[string]*Client),
-		register:    make(chan *Client),
-		unregister:  make(chan *Client),
+		lg: lg,
+
+		clients:    make(map[string]*Client),
+		register:   make(chan *Client),
+		unregister: make(chan *Client),
+
 		messageChan: messageChan,
 	}
 }

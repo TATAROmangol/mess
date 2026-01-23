@@ -3,7 +3,7 @@ module github.com/TATAROmangol/mess/websocket
 go 1.25.5
 
 require (
-	github.com/TATAROmangol/mess/shared v0.0.0-20260122221921-614ddb4156cb
+	github.com/TATAROmangol/mess/shared v0.0.0-20260123022406-515cf3847cf6
 	github.com/goccy/go-yaml v1.19.2
 	github.com/gorilla/mux v1.8.1
 	github.com/gorilla/websocket v1.5.3

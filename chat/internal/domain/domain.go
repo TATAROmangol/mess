@@ -187,6 +187,11 @@ func (d *Domain) UpdateLastRead(ctx context.Context, chatID int, messageID int) 
 		return nil, fmt.Errorf("extract subject: %w", err)
 	}
 
+	chat, err := d.Storage.Chat().GetChatByID(ctx, chatID)
+	if err != nil {
+		return nil, fmt.Errorf("get chat by id: %w", err)
+	}
+
 	mess, err := d.Storage.Message().GetMessageByID(ctx, messageID)
 	if err != nil {
 		return nil, fmt.Errorf("get message by id: %w", err)
@@ -195,6 +200,11 @@ func (d *Domain) UpdateLastRead(ctx context.Context, chatID int, messageID int) 
 	lastRead, err := d.Storage.LastRead().UpdateLastRead(ctx, subj.GetSubjectId(), chatID, messageID, mess.Number)
 	if err != nil {
 		return nil, fmt.Errorf("update last read: %w", err)
+	}
+
+	_, err = d.Storage.LastReadOutbox().AddLastReadOutbox(ctx, chat.GetSecondSubject(subj.GetSubjectId()), subj.GetSubjectId(), chatID, messageID)
+	if err != nil {
+		return nil, fmt.Errorf("add last read outbox: %w", err)
 	}
 
 	return lastRead, nil
@@ -234,6 +244,18 @@ func (d *Domain) GetMessages(ctx context.Context, chatID int, filter *MessagePag
 
 	if !storageFilter.Asc {
 		utils.ReverseSlice(messages)
+	}
+
+	lastMess := messages[len(messages)-1]
+	lastRead, err := d.Storage.LastRead().UpdateLastRead(ctx, subj.GetSubjectId(), chatID, lastMess.ID, lastMess.Number)
+	if err != nil && !errors.Is(err, storage.ErrNoRows) {
+		return nil, fmt.Errorf("update last read: %w", err)
+	}
+	if lastRead != nil {
+		_, err = d.Storage.LastReadOutbox().AddLastReadOutbox(ctx, chat.GetSecondSubject(subj.GetSubjectId()), subj.GetSubjectId(), chatID, lastMess.ID)
+		if err != nil {
+			return nil, fmt.Errorf("add last read outbox: %w", err)
+		}
 	}
 
 	return messages, nil
@@ -291,6 +313,11 @@ func (d *Domain) GetMessagesToLastRead(ctx context.Context, chatID int, limit in
 	}
 	if lastRead != nil {
 		lg = lg.With(loglables.Updated, *lastRead)
+
+		_, err = d.Storage.LastReadOutbox().AddLastReadOutbox(ctx, chat.GetSecondSubject(subj.GetSubjectId()), subj.GetSubjectId(), chatID, lastMess.ID)
+		if err != nil {
+			return nil, fmt.Errorf("add last read outbox: %w", err)
+		}
 	}
 
 	lg.Debug("get messages to last read")
@@ -332,14 +359,7 @@ func (d *Domain) SendMessage(ctx context.Context, chatID int, content string) (*
 	}
 	lg = lg.With(loglables.LastRead, *lastRead)
 
-	var recipient string
-	if chat.FirstSubjectID != subj.GetSubjectId() {
-		recipient = chat.FirstSubjectID
-	} else {
-		recipient = chat.SecondSubjectID
-	}
-
-	outbox, err := tx.MessageOutbox().AddMessageOutbox(ctx, recipient, message.ID, model.AddOperation)
+	outbox, err := tx.MessageOutbox().AddMessageOutbox(ctx, chat.GetSecondSubject(subj.GetSubjectId()), message.ID, model.AddOperation)
 	if err != nil {
 		return nil, fmt.Errorf("add message outbox: %w", err)
 	}
@@ -389,14 +409,7 @@ func (d *Domain) UpdateMessage(ctx context.Context, messageID int, content strin
 	}
 	lg = lg.With(loglables.Chat, *chat)
 
-	var recipient string
-	if chat.FirstSubjectID != subj.GetSubjectId() {
-		recipient = chat.FirstSubjectID
-	} else {
-		recipient = chat.SecondSubjectID
-	}
-
-	outbox, err := tx.MessageOutbox().AddMessageOutbox(ctx, recipient, message.ID, model.UpdateOperation)
+	outbox, err := tx.MessageOutbox().AddMessageOutbox(ctx, chat.GetSecondSubject(subj.GetSubjectId()), message.ID, model.UpdateOperation)
 	if err != nil {
 		return nil, fmt.Errorf("add message outbox: %w", err)
 	}

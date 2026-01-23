@@ -4,7 +4,7 @@ go 1.25.5
 
 require (
 	github.com/Masterminds/squirrel v1.5.4
-	github.com/TATAROmangol/mess/shared v0.0.0-20260122191711-e849dac5ae95
+	github.com/TATAROmangol/mess/shared v0.0.0-20260123034337-951c977111f1
 	github.com/gin-gonic/gin v1.11.0
 	github.com/goccy/go-yaml v1.18.0
 	github.com/google/uuid v1.6.0

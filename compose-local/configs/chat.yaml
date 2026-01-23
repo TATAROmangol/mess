@@ -26,3 +26,13 @@ message_worker:
   delay: 10s
   messages_limit: 100
   users_limit: 10
+
+last_read_worker:
+  kafka_producer: 
+    brokers: 
+    - kafka:29092 
+    topic: lastread-event 
+    retry: 1
+    timeout: 5s
+  delay: 5s
+  limit: 10

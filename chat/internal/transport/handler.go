@@ -238,13 +238,15 @@ func (h *Handler) UpdateLastRead(c *gin.Context) {
 		return
 	}
 
-	_, err := h.domain.UpdateLastRead(c.Request.Context(), req.ChatID, req.MessageID)
+	lastRead, err := h.domain.UpdateLastRead(c.Request.Context(), req.ChatID, req.MessageID)
 	if err != nil {
 		h.sendError(c, err)
 		return
 	}
 
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, httpdto.UpdateLastReadResponse{
+		MessageID: lastRead.MessageID,
+	})
 }
 
 func (h *Handler) sendError(c *gin.Context, err error) {

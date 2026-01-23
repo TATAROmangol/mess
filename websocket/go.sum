@@ -4,6 +4,10 @@ github.com/MicahParks/keyfunc v1.9.0 h1:lhKd5xrFHLNOWrDc4Tyb/Q1AJ4LCzQ48GVJyVIID
 github.com/MicahParks/keyfunc v1.9.0/go.mod h1:IdnCilugA0O/99dW+/MkvlyrsX8+L8+x95xuVNtM5jw=
 github.com/TATAROmangol/mess/shared v0.0.0-20260122221921-614ddb4156cb h1:lXegWqi+Z5GuNJWUu9TT+2SD50eGAC/zSf9QImlmDcs=
 github.com/TATAROmangol/mess/shared v0.0.0-20260122221921-614ddb4156cb/go.mod h1:jv1xxLeCq1526Hb7P3yvy8fr0s6rBJ1uscIsmwVpDsg=
+github.com/TATAROmangol/mess/shared v0.0.0-20260123004421-144bc281b8e8 h1:wd5PQ7K26ZxlhGidLhTSwkkavZEhckiTrWYrm+Oenos=
+github.com/TATAROmangol/mess/shared v0.0.0-20260123004421-144bc281b8e8/go.mod h1:jv1xxLeCq1526Hb7P3yvy8fr0s6rBJ1uscIsmwVpDsg=
+github.com/TATAROmangol/mess/shared v0.0.0-20260123022406-515cf3847cf6 h1:kokRhh4uhJmJHPt3ztADrv42PHq+klbxTCBDiDNkj7s=
+github.com/TATAROmangol/mess/shared v0.0.0-20260123022406-515cf3847cf6/go.mod h1:jv1xxLeCq1526Hb7P3yvy8fr0s6rBJ1uscIsmwVpDsg=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=

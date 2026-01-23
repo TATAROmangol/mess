@@ -12,10 +12,11 @@ import (
 )
 
 type Config struct {
-	Keycloak      keycloak.Config            `yaml:"keycloak"`
-	MessageWorker worker.MessageWorkerConfig `yaml:"message_worker"`
-	HTTP          transport.HTTPConfig       `yaml:"http"`
-	WSConfig      transport.WSHandlerConfig  `yaml:"ws_config"`
+	Keycloak       keycloak.Config            `yaml:"keycloak"`
+	MessageWorker  worker.MessageWorkerConfig `yaml:"message_worker"`
+	LastReadWorker worker.LastReadConfig      `yaml:"lastread_worker"`
+	HTTP           transport.HTTPConfig       `yaml:"http"`
+	WSConfig       transport.WSHandlerConfig  `yaml:"ws_config"`
 }
 
 func LoadConfig() (*Config, error) {

@@ -94,6 +94,23 @@ var InitMessageOutboxes = []*model.MessageOutbox{
 	},
 }
 
+var InitLastReadOutboxes = []*model.LastReadOutbox{
+	{
+		ID:          1,
+		RecipientID: "subj-2",
+		SubjectID:   "subj-1",
+		ChatID:      1,
+		MessageID:   1,
+	},
+	{
+		ID:          2,
+		RecipientID: "subj-1",
+		SubjectID:   "subj-2",
+		ChatID:      1,
+		MessageID:   2,
+	},
+}
+
 // init pg container
 func TestMain(m *testing.M) {
 	ctx := context.Background()
@@ -174,6 +191,11 @@ func cleanupDB(t *testing.T) {
 	if err != nil {
 		t.Fatalf("cleanup db: %v", err)
 	}
+
+	_, err = db.Exec(fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY CASCADE", storage.LastReadOutboxTable))
+	if err != nil {
+		t.Fatalf("cleanup db: %v", err)
+	}
 }
 
 func initData(t *testing.T) {
@@ -207,6 +229,13 @@ func initData(t *testing.T) {
 
 	for _, ms := range InitMessageOutboxes {
 		_, err = s.MessageOutbox().AddMessageOutbox(t.Context(), ms.RecipientID, ms.MessageID, ms.Operation)
+		if err != nil {
+			t.Fatalf("create message outbox: %v", err)
+		}
+	}
+
+	for _, ms := range InitLastReadOutboxes {
+		_, err = s.LastReadOutbox().AddLastReadOutbox(t.Context(), ms.RecipientID, ms.SubjectID, ms.ChatID, ms.MessageID)
 		if err != nil {
 			t.Fatalf("create message outbox: %v", err)
 		}

@@ -54,12 +54,19 @@ type MessageOutbox interface {
 	DeleteMessageOutbox(ctx context.Context, ids []int) ([]*model.MessageOutbox, error)
 }
 
+type LastReadOutbox interface {
+	AddLastReadOutbox(ctx context.Context, recipientID string, subjectID string, chatID int, messageID int) (*model.LastReadOutbox, error)
+	GetLastReadOutbox(ctx context.Context, limit int) ([]*model.LastReadOutbox, error)
+	DeleteLastReadOutbox(ctx context.Context, ids []int) ([]*model.LastReadOutbox, error)
+}
+
 type Service interface {
 	WithTransaction(ctx context.Context) (ServiceTransaction, error)
 	Chat() Chat
 	LastRead() LastRead
 	Message() Message
 	MessageOutbox() MessageOutbox
+	LastReadOutbox() LastReadOutbox
 }
 
 type ServiceTransaction interface {
@@ -67,6 +74,7 @@ type ServiceTransaction interface {
 	LastRead() LastRead
 	Message() Message
 	MessageOutbox() MessageOutbox
+	LastReadOutbox() LastReadOutbox
 	Commit() error
 	Rollback() error
 }
@@ -137,6 +145,13 @@ func (s *Storage) Message() Message {
 }
 
 func (s *Storage) MessageOutbox() MessageOutbox {
+	return &Storage{
+		db:   s.db,
+		exec: s.exec,
+	}
+}
+
+func (s *Storage) LastReadOutbox() LastReadOutbox {
 	return &Storage{
 		db:   s.db,
 		exec: s.exec,

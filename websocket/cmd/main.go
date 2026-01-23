@@ -53,6 +53,14 @@ func main() {
 	}
 	go messageWorker.Run(ctx)
 
+	lastreadWorkerLg := lg.With(loglables.Layer, "lastread worker")
+	lastreadWorker, err := worker.NewLastReadWorker(cfg.LastReadWorker, msgs, lastreadWorkerLg)
+	if err != nil {
+		lg.Error(fmt.Errorf("new message worker: %w", err))
+		return
+	}
+	go lastreadWorker.Run(ctx)
+
 	hubLg := lg.With(loglables.Layer, "hub")
 	hub := transport.NewHub(msgs, hubLg)
 	go hub.Run()

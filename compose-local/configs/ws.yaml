@@ -12,6 +12,13 @@ message_worker:
     topic: message-event 
     messages_limit: 10
 
+lastread_worker:
+  kafka_consumer:
+    brokers:
+    - kafka:29092
+    topic: lastread-event 
+    messages_limit: 10
+
 ws_config:
   read_buffer_size_bytes: 1024
   write_buffer_size_bytes: 1024
