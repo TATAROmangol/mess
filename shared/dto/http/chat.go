@@ -25,7 +25,7 @@ type ChatsMetadataResponse struct {
 	SecondSubjectID string    `json:"second_subject_id"`
 	UpdatedAt       time.Time `json:"updated_at"`
 
-	LastMessage *MessageResponse `json:"last_message"`
+	LastMessage MessageResponse `json:"last_message"`
 
 	UnreadCount       int  `json:"unread_count"`
 	IsLastMessageRead bool `json:"is_last_message_read"`
