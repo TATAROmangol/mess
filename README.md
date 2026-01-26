@@ -1,1 +1,2 @@
-# mess
+# Мессенджер
+- Endpoint: http://localhost:3000
