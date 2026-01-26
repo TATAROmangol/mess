@@ -7,7 +7,7 @@ package loggermocks
 import (
 	reflect "reflect"
 
-	logger "github.com/TATAROmangol/mess/shared/logger"
+	logger "github.com/1ocknight/mess/shared/logger"
 	gomock "github.com/golang/mock/gomock"
 )
 

@@ -8,7 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	messagequeue "github.com/TATAROmangol/mess/shared/messagequeue"
+	messagequeue "github.com/1ocknight/mess/shared/messagequeue"
 	gomock "github.com/golang/mock/gomock"
 )
 

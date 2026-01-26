@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/TATAROmangol/mess/shared/messagequeue"
+	"github.com/1ocknight/mess/shared/messagequeue"
 	"github.com/segmentio/kafka-go"
 )
 

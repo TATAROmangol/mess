@@ -6,7 +6,7 @@ require (
 	github.com/IBM/sarama v1.46.3
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/MicahParks/keyfunc v1.9.0
-	github.com/TATAROmangol/mess/shared v0.0.0-20260125174108-a90ef11b981e
+	github.com/1ocknight/mess/shared v0.0.0-20260125174108-a90ef11b981e
 	github.com/aws/aws-sdk-go-v2 v1.41.1
 	github.com/aws/aws-sdk-go-v2/config v1.32.7
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.7

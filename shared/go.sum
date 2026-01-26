@@ -10,8 +10,8 @@ github.com/MicahParks/keyfunc v1.9.0 h1:lhKd5xrFHLNOWrDc4Tyb/Q1AJ4LCzQ48GVJyVIID
 github.com/MicahParks/keyfunc v1.9.0/go.mod h1:IdnCilugA0O/99dW+/MkvlyrsX8+L8+x95xuVNtM5jw=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
-github.com/TATAROmangol/mess/shared v0.0.0-20260125174108-a90ef11b981e h1:QCYt2L5OFzM9N8DQeXKkt5+KRNU36D+/tbfWB2RBX1M=
-github.com/TATAROmangol/mess/shared v0.0.0-20260125174108-a90ef11b981e/go.mod h1:jv1xxLeCq1526Hb7P3yvy8fr0s6rBJ1uscIsmwVpDsg=
+github.com/1ocknight/mess/shared v0.0.0-20260125174108-a90ef11b981e h1:QCYt2L5OFzM9N8DQeXKkt5+KRNU36D+/tbfWB2RBX1M=
+github.com/1ocknight/mess/shared v0.0.0-20260125174108-a90ef11b981e/go.mod h1:jv1xxLeCq1526Hb7P3yvy8fr0s6rBJ1uscIsmwVpDsg=
 github.com/aws/aws-sdk-go-v2 v1.41.1 h1:ABlyEARCDLN034NhxlRUSZr4l71mh+T5KAeGh6cerhU=
 github.com/aws/aws-sdk-go-v2 v1.41.1/go.mod h1:MayyLB8y+buD9hZqkCW3kX1AKq07Y5pXxtgB+rRFhz0=
 github.com/aws/aws-sdk-go-v2/aws/protocol/eventstream v1.7.4 h1:489krEF9xIGkOaaX3CE/Be2uWjiXrkCH6gUX+bZA/BU=
