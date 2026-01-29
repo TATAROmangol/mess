@@ -49,7 +49,6 @@ func (h *Handler) AddChat(c *gin.Context) {
 		ChatID:          chat.ID,
 		SecondSubjectID: secondSubjID,
 		LastReads:       lastReadsMap,
-		Messages:        []*httpdto.MessageResponse{},
 	})
 }
 

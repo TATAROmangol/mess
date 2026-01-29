@@ -17,8 +17,10 @@ type Config struct {
 	Postgres       postgres.Config  `yaml:"postgres"`
 	HTTP           transport.Config `yaml:"http"`
 
-	MessageWorker  worker.MessageWorkerConfig `json:"message_worker"`
-	LastReadWorker worker.LastReadConfig      `json:"last_read_worker"`
+	MessageWorker  worker.MessageWorkerConfig `yaml:"message_worker"`
+	LastReadWorker worker.LastReadConfig      `yaml:"last_read_worker"`
+
+	LoggerDebug bool `yaml:"logger_debug"`
 
 	Keycloak keycloak.Config `yaml:"keycloak"`
 }

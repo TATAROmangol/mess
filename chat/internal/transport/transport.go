@@ -14,9 +14,10 @@ import (
 )
 
 type Config struct {
-	Host      string `yaml:"host"`
-	Port      string `yaml:"port"`
-	DebugMode bool   `yaml:"debug_mode"`
+	CorsUrl   []string `yaml:"cors_url"`
+	Host      string   `yaml:"host"`
+	Port      string   `yaml:"port"`
+	DebugMode bool     `yaml:"debug_mode"`
 }
 
 type HTTPServer struct {
@@ -33,15 +34,16 @@ func NewServer(cfg Config, lg logger.Logger, domain domain.Service, auth auth.Se
 	}
 
 	r := gin.New()
-
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173", "http://localhost:3000 "}, // фронт
-		AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
+	if len(cfg.CorsUrl) != 0 {
+		r.Use(cors.New(cors.Config{
+			AllowOrigins:     cfg.CorsUrl,
+			AllowMethods:     []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+			AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+			ExposeHeaders:    []string{"Content-Length"},
+			AllowCredentials: true,
+			MaxAge:           12 * time.Hour,
+		}))
+	}
 
 	r.Use(InitLoggerMiddleware(lg))
 	r.Use(SetRequestMetadataMiddleware())

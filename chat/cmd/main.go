@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -26,18 +27,21 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	lg := logger.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
-	}))
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		log.Fatal(fmt.Errorf("load config: %w", err))
+		return
+	}
+
+	var logHandler *slog.HandlerOptions
+	if cfg.LoggerDebug {
+		logHandler = &slog.HandlerOptions{Level: slog.LevelDebug}
+	}
+
+	lg := logger.New(slog.NewJSONHandler(os.Stdout, logHandler))
 	lg = lg.With(loglables.Service, "chat_microservice")
 
 	ctx = ctxkey.WithLogger(ctx, lg)
-
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		lg.Error(fmt.Errorf("load config: %w", err))
-		return
-	}
 
 	storage, err := storage.New(cfg.Postgres)
 	if err != nil {
