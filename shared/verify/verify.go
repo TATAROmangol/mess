@@ -1,31 +1,30 @@
-package keycloak
+package verify
 
 import (
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/MicahParks/keyfunc"
 	"github.com/1ocknight/mess/shared/logger"
 	"github.com/1ocknight/mess/shared/model"
+	"github.com/MicahParks/keyfunc"
 	"github.com/golang-jwt/jwt/v4"
 )
 
 const (
 	SubClaim      = "sub"
 	EmailClaim    = "email"
-	UsernameClaim = "preferred_username"
 )
 
 type Config struct {
 	JWKSEndpoint string `json:"jwks_endpoint"`
 }
 
-type Keycloak struct {
+type Verify struct {
 	jwks *keyfunc.JWKS
 }
 
-func New(cfg Config, lg logger.Logger) (*Keycloak, error) {
+func New(cfg Config, lg logger.Logger) (*Verify, error) {
 	jwks, err := keyfunc.Get(cfg.JWKSEndpoint, keyfunc.Options{
 		RefreshInterval: time.Minute * 10,
 		RefreshTimeout:  time.Second * 10,
@@ -37,12 +36,12 @@ func New(cfg Config, lg logger.Logger) (*Keycloak, error) {
 		return nil, fmt.Errorf("get: %w", err)
 	}
 
-	return &Keycloak{
+	return &Verify{
 		jwks: jwks,
 	}, nil
 }
 
-func (k *Keycloak) Verify(src string) (model.Subject, error) {
+func (k *Verify) Verify(src string) (model.Subject, error) {
 	parts := strings.Split(src, " ")
 	if len(parts) != 2 {
 		return nil, fmt.Errorf("invalid token len: %s", src)
