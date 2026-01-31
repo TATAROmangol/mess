@@ -8,18 +8,16 @@
 ## Структура:
 ```text
 .
-├── auth - адаптер авторизации
-│   └── keycloak - клиент для работы с keycloak
 ├── dto - data transfer models
 │   ├── http - для http запросов
 │   ├── mq - для очередей сообщений
 │   └── ws - для websocket
-├── kafkav2 - клиент для kafka и реализация consumer/producer
 ├── logger - реализация логики
 ├── model - общие доменные модели, к примеру Subject, который возвращает auth
 ├── postgres - postgres клиент, так же реализация мигратора и пагинации
 ├── redis - клиент для работы с redis
 ├── requestmeta - функции для сбора метрик http запроса
 ├── s3client - клиент для s3
-└── utils - вспомогательные функции, к примеру из string to *string
+├── utils - вспомогательные функции, к примеру из string to *string
+└── verify - реализация верификации и интерфейс
 ```

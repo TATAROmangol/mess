@@ -11,9 +11,13 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+type Service interface {
+	Verify(src string) (model.Subject, error)
+}
+
 const (
-	SubClaim      = "sub"
-	EmailClaim    = "email"
+	SubClaim   = "sub"
+	EmailClaim = "email"
 )
 
 type Config struct {
