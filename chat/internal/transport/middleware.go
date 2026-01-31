@@ -6,9 +6,9 @@ import (
 
 	"github.com/1ocknight/mess/chat/internal/ctxkey"
 	"github.com/1ocknight/mess/chat/internal/loglables"
-	"github.com/1ocknight/mess/shared/auth"
 	"github.com/1ocknight/mess/shared/logger"
 	"github.com/1ocknight/mess/shared/requestmeta"
+	"github.com/1ocknight/mess/shared/verify"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -79,7 +79,7 @@ func LogResponseMiddleware() gin.HandlerFunc {
 	}
 }
 
-func InitSubjectMiddleware(auth auth.Service) gin.HandlerFunc {
+func InitSubjectMiddleware(auth verify.Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
 

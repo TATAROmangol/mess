@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/1ocknight/mess/chat/internal/domain"
-	"github.com/1ocknight/mess/shared/auth"
 	"github.com/1ocknight/mess/shared/logger"
+	"github.com/1ocknight/mess/shared/verify"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -26,7 +26,7 @@ type HTTPServer struct {
 	httpSv *http.Server
 }
 
-func NewServer(cfg Config, lg logger.Logger, domain domain.Service, auth auth.Service) *HTTPServer {
+func NewServer(cfg Config, lg logger.Logger, domain domain.Service, verify verify.Service) *HTTPServer {
 	h := NewHandler(domain)
 
 	if !cfg.DebugMode {
@@ -48,7 +48,7 @@ func NewServer(cfg Config, lg logger.Logger, domain domain.Service, auth auth.Se
 	r.Use(InitLoggerMiddleware(lg))
 	r.Use(SetRequestMetadataMiddleware())
 	r.Use(LogResponseMiddleware())
-	r.Use(InitSubjectMiddleware(auth))
+	r.Use(InitSubjectMiddleware(verify))
 
 	r.GET("/chat/subject/:subject_id", h.GetChatBySubjectID)
 	r.POST("/chat/subject/:subject_id", h.AddChat)

@@ -7,8 +7,8 @@ import (
 
 	"github.com/1ocknight/mess/chat/internal/transport"
 	"github.com/1ocknight/mess/chat/internal/worker"
-	"github.com/1ocknight/mess/shared/auth/keycloak"
 	"github.com/1ocknight/mess/shared/postgres"
+	"github.com/1ocknight/mess/shared/verify"
 	"github.com/goccy/go-yaml"
 )
 
@@ -17,12 +17,11 @@ type Config struct {
 	Postgres       postgres.Config  `yaml:"postgres"`
 	HTTP           transport.Config `yaml:"http"`
 
-	MessageWorker  worker.MessageWorkerConfig `yaml:"message_worker"`
-	LastReadWorker worker.LastReadConfig      `yaml:"last_read_worker"`
+	MessageWorker worker.MessageWorkerConfig `yaml:"message_worker"`
 
 	LoggerDebug bool `yaml:"logger_debug"`
 
-	Keycloak keycloak.Config `yaml:"keycloak"`
+	Verify verify.Config `yaml:"verify"`
 }
 
 func LoadConfig() (*Config, error) {
